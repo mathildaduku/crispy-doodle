@@ -15,29 +15,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
- options.UseCosmos(builder.Configuration.GetConnectionString("DefaultConnection"), databaseName:"Account"));
+ options.UseCosmos(builder.Configuration.GetConnectionString("DefaultConnection"), databaseName: "Account"));
 
 builder.Services.AddCosmosIdentity<AppDbContext, User, IdentityRole, string>(
-      options => options.SignIn.RequireConfirmedAccount = false // Always a good idea :)
+      options => options.SignIn.RequireConfirmedAccount = true // Always a good idea :)
+
+    options.Password.RequiredLength = 6;
+options.Password.RequireNonAlphanumeric = false;
+options.Password.RequireUppercase = false;
+options.User.RequireUniqueEmail = true;
+// options.SignIn.RequireConfirmedEmail = true;
+
+
     )
-    .AddDefaultUI() // Use this if Identity Scaffolding is in use
+    // .AddDefaultUI() // Use this if Identity Scaffolding is in use
     .AddDefaultTokenProviders();
-
-
-/*builder.Services.AddIdentity<AccountService.Models.User, IdentityRole>(options =>
-{
-    options.Password.RequiredLength = 8;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequireUppercase = true;
-
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-
-    options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedEmail = true;
-
-    // AddDefaultTokenProviders() needs to be called when we need to generate a token for a user e.g reset password, confirm email, two factor auth, etc.
-}).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();*/
 
 /*builder.Services.AddAuthentication().AddGoogle(options =>
 {
