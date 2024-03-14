@@ -1,20 +1,30 @@
+using AccountService.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Azure.Cosmos;
+using AccountService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using AspNetCore.Identity.CosmosDb;
+using AspNetCore.Identity.CosmosDb.Containers;
+using AspNetCore.Identity.CosmosDb.Extensions;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseCosmos(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AppDbContext>(options =>
+ options.UseCosmos(builder.Configuration.GetConnectionString("DefaultConnection"), databaseName:"Account"));
 
-builder.Services.AddIdentity<User, IdentityRole>(options =>
+builder.Services.AddCosmosIdentity<AppDbContext, User, IdentityRole, string>(
+      options => options.SignIn.RequireConfirmedAccount = false // Always a good idea :)
+    )
+    .AddDefaultUI() // Use this if Identity Scaffolding is in use
+    .AddDefaultTokenProviders();
+
+
+/*builder.Services.AddIdentity<AccountService.Models.User, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 8;
     options.Password.RequireNonAlphanumeric = true;
@@ -27,13 +37,13 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.SignIn.RequireConfirmedEmail = true;
 
     // AddDefaultTokenProviders() needs to be called when we need to generate a token for a user e.g reset password, confirm email, two factor auth, etc.
-}).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+}).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();*/
 
-builder.Services.AddAuthentication().AddGoogle(options =>
+/*builder.Services.AddAuthentication().AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["Google:ClientId"] ?? string.Empty;
     options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? string.Empty;
-});
+});*/
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
