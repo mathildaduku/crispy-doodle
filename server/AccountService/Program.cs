@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using AccountService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using AspNetCore.Identity.CosmosDb;
-using AspNetCore.Identity.CosmosDb.Containers;
 using AspNetCore.Identity.CosmosDb.Extensions;
 using System.Text;
 
@@ -14,22 +12,24 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
+
 builder.Services.AddDbContext<AppDbContext>(options =>
- options.UseCosmos(builder.Configuration.GetConnectionString("DefaultConnection"), databaseName: "Account"));
+ options.UseCosmos(builder.Configuration.GetConnectionString("DefaultConnection"), databaseName: builder.Configuration["DatabaseName"]));
 
 builder.Services.AddCosmosIdentity<AppDbContext, User, IdentityRole, string>(
-      options => options.SignIn.RequireConfirmedAccount = true // Always a good idea :)
+      options =>
+      {
+          //options.SignIn.RequireConfirmedAccount = true; // Always a good idea :)
+          options.SignIn.RequireConfirmedAccount = false;
 
-    options.Password.RequiredLength = 6;
-options.Password.RequireNonAlphanumeric = false;
-options.Password.RequireUppercase = false;
-options.User.RequireUniqueEmail = true;
-// options.SignIn.RequireConfirmedEmail = true;
-
-
-    )
-    // .AddDefaultUI() // Use this if Identity Scaffolding is in use
-    .AddDefaultTokenProviders();
+          options.Password.RequiredLength = 6;
+          options.Password.RequireNonAlphanumeric = false;
+          options.Password.RequireDigit = false;
+          options.Password.RequireUppercase = false;
+          options.User.RequireUniqueEmail = true;
+          //options.SignIn.RequireConfirmedEmail = true;
+      }
+).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 /*builder.Services.AddAuthentication().AddGoogle(options =>
 {
@@ -37,11 +37,7 @@ options.User.RequireUniqueEmail = true;
     options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? string.Empty;
 });*/
 
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Account/Login";
-    options.AccessDeniedPath = "/Account/AccessDenied";
-});
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -66,13 +62,6 @@ builder.Services.AddAuthentication(options =>
 
 });
 
-/*builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("HR", policy =>
-    {
-        policy.RequireClaim("Department", "HR");
-    });
-});*/
 
 var app = builder.Build();
 
@@ -90,5 +79,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+try
+{
+    DbInitializer.InitDb(app);
+}catch(Exception e)
+{
+    Console.WriteLine("Error setting up db");
+}
 
 app.Run();
