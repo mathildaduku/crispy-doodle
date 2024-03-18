@@ -1,5 +1,7 @@
 ﻿using AccountService.Dto.Request;
+using AccountService.Dto.Response;
 using AccountService.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -15,14 +17,16 @@ namespace AccountService.Controllers
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly IMapper _mapper;
 
         private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
+        public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, IMapper mapper)
         {
             _signInManager = signInManager;
             _configuration = configuration;
             _userManager = userManager;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
@@ -62,7 +66,7 @@ namespace AccountService.Controllers
                 // Generate authentication token
                 var token = GenerateJwtToken(user);
 
-                return Ok(new { Token = token, User = user });
+                return Ok(new { Token = token, User = _mapper.Map<UserDto>(user) });
             }
 
             return BadRequest("Invalid username or password");
