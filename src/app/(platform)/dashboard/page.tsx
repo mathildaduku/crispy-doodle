@@ -2,5 +2,5 @@
 
 
 export default function Dashboard(){
-    return <h1>Post dashboard</h1>
+    return <h1>doodle dashboard</h1>
 }
