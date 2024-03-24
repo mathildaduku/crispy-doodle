@@ -32,7 +32,6 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  bio: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,11 +40,11 @@ export interface UserResponse {
   data: User;
 }
 
-export interface UpdatedProfile {
-  firstname: string;
-  lastname: string;
-  bio: string;
-}
+// export interface UpdatedProfile {
+//   firstname: string;
+//   lastname: string;
+//   bio: string;
+// }
 
 class AuthService {
   static register = async (
@@ -60,9 +59,9 @@ class AuthService {
     return await axiosConfig.post("auth/login", requestBody);
   };
 
-  static getCurrentUser = async (): Promise<AxiosResponse<UserResponse>> => {
-    return await axiosConfig.get("auth/");
-  };
+  // static getCurrentUser = async (): Promise<AxiosResponse<UserResponse>> => {
+  //   return await axiosConfig.get("auth/");
+  // };
 }
 
 export default AuthService;

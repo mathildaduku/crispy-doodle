@@ -49,4 +49,14 @@ const useAuth = () => {
       setToken(responseData.jwtToken);
     },
   });
+
+  const logout = ()=>{
+    clearAuth();
+    router.push("/login")
+  };
+
+  return {SignUpMutation, loginMutation, logout, user, token};
 };
+
+
+export default useAuth;

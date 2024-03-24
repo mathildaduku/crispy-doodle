@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Taskflow",
+  name: "CrispyDoodle",
   description:
-    "Collaborate, manage, and track your work and projects. Manage your tasks and beat deadlines in one place.",
+    "Get creative with you post, reach out and connect with people of same interest",
 };
