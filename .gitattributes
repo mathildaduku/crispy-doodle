@@ -1,0 +1,2 @@
+1103486_1080p_Search_Finance_1920x1080.mov filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
