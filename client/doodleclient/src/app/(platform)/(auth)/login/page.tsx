@@ -121,7 +121,7 @@ const LoginPage = () => {
       </div>
       <div className=" bg-primary flex-col items-center w-[60%] hidden md:flex rounded-xl justify-center">
         <div className="text-white space-y-3">
-          <h1 className="text-4xl font-bold">Optimize your contents,</h1>
+          <h1 className="text-4xl font-bold">Optimize your contents</h1>
           <h4 className="text-2xl text-center">
             with seamless communication!
           </h4>
