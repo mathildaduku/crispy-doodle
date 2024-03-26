@@ -9,10 +9,9 @@ const LandingPage = () => {
     <div>
       <section className=" flex flex-col-reverse sm:flex-row px-11 py-28">
         <div className="md:w-[60%] max-w-xl flex flex-col justify-center space-y-5">
-          <div className="bg-white pt-10 md:pt-0">
-          </div>
-          <h1 className="sm:text-left text-4xl font-bold tracking-tight text-center">
-            Manage your tasks efficiently and with ease.
+          <div className="bg-white pt-10 md:pt-0"></div>
+          <h1 className="sm:text-left text-6xl font-bold tracking-tight text-center">
+            CrispyDoodle
           </h1>
           <p className="sm:text-left text-gray-900 text-center text-lg">
             TaskFlow is not just a task scheduler; it&apos;s your personalized
