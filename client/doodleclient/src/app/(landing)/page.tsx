@@ -11,7 +11,7 @@ const LandingPage = () => {
         <div className="md:w-[60%] max-w-xl flex flex-col justify-center space-y-5 space-x-1">
           <div className="bg-white pt-10 md:pt-0"></div>
           <h1 className="sm:text-left text-6xl font-bold tracking-tight text-center">
-            Boost your productivity and creativity
+            Boost your productivity and creativity.
           </h1>
           <p className="sm:text-left text-gray-900 text-center text-lg">
             CrispyDoodle is equipped with features that streamline the blogging
