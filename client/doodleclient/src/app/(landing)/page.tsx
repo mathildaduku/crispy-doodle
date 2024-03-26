@@ -15,7 +15,7 @@ const LandingPage = () => {
           </h1>
           <p className="sm:text-left text-gray-900 text-center text-lg">
             CrispyDoodle is equipped with features that streamline the blogging
-            process, allowing you to focus on what matters most: your ideas...
+            process, allowing you to focus on what matters most: your ideas
           </p>
           <div className="">
             <Button
