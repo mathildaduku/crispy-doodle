@@ -23,15 +23,14 @@ namespace NotificationService
 
         [Function(nameof(NewSubscriptionFunction))]
         public async Task Run(
-            [ServiceBusTrigger("mytopic", "mysubscription", Connection = "myconnectionstring")]
+            [ServiceBusTrigger("mytopic", "mysubscription", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions,
-            AppDbContext dbContext,
-            ILogger<NewSubscriptionFunction> logger)
+            AppDbContext dbContext)
         {
-            logger.LogInformation("Message ID: {id}", message.MessageId);
-            logger.LogInformation("Message Body: {body}", message.Body);
-            logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
+            _logger.LogInformation("Message ID: {id}", message.MessageId);
+            _logger.LogInformation("Message Body: {body}", message.Body);
+            _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
             try
             {
@@ -39,21 +38,20 @@ namespace NotificationService
                 var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(message.Body));
 
                 // Add the new subscription to the DbContext
-                await dbContext.Subscriptions.AddAsync(subscription);
+                await _dbContext.Subscriptions.AddAsync(subscription);
 
                 // Save changes in the DbContext to Cosmos DB
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
-                // logger.LogInformation($"Subscription for user {subscription.SubscriberUserId} to post {subscription.PostId} stored in Cosmos DB.");
-                logger.LogInformation("New subscription added to Cosmos DB");
+                _logger.LogInformation("New subscription added to Cosmos DB");
             }
-             
             catch (Exception ex)
             {
                 _logger.LogError($"Error processing new subscription: {ex.Message}");
             }
-    // Complete the message
-    await messageActions.CompleteMessageAsync(message);
+
+            // Complete the message
+            await messageActions.CompleteMessageAsync(message);
         }
     }
 }
