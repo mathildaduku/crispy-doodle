@@ -9,6 +9,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{D2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{8B000CDD-E3DD-4516-B475-469A227F8389}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopicSender", "TopicSender\TopicSender.csproj", "{1A61808B-FCC0-48F7-ACDD-FB6C250FB5F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SubscriptionReceiver", "SubscriptionReceiver", "{2C541BE8-D463-4737-9234-3CB83667BFF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubscriptionReceiver", "SubscriptionReceiver\SubscriptionReceiver\SubscriptionReceiver.csproj", "{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +29,14 @@ Global
 		{8B000CDD-E3DD-4516-B475-469A227F8389}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B000CDD-E3DD-4516-B475-469A227F8389}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B000CDD-E3DD-4516-B475-469A227F8389}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A61808B-FCC0-48F7-ACDD-FB6C250FB5F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A61808B-FCC0-48F7-ACDD-FB6C250FB5F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A61808B-FCC0-48F7-ACDD-FB6C250FB5F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A61808B-FCC0-48F7-ACDD-FB6C250FB5F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -30,6 +44,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{D239AD95-4DA7-4F28-AEE9-7C698776BFA9} = {D27D1168-B3AE-4C0D-AAC7-9D3C33BF7D00}
 		{8B000CDD-E3DD-4516-B475-469A227F8389} = {D27D1168-B3AE-4C0D-AAC7-9D3C33BF7D00}
+		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8} = {2C541BE8-D463-4737-9234-3CB83667BFF8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E195BCF6-ECC6-4647-ABFD-4FD8389582FA}

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
@@ -25,24 +26,26 @@ namespace NotificationService
             [ServiceBusTrigger("mytopic", "mysubscription", Connection = "myconnectionstring")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions,
-            AppDbContext dbContext)
+            AppDbContext dbContext,
+            ILogger<NewSubscriptionFunction> logger)
         {
-            _logger.LogInformation("Message ID: {id}", message.MessageId);
-            _logger.LogInformation("Message Body: {body}", message.Body);
-            _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
+            logger.LogInformation("Message ID: {id}", message.MessageId);
+            logger.LogInformation("Message Body: {body}", message.Body);
+            logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
             try
             {
-                // Deserialize the Service Bus message to a Subscription object
-                var subscription = JsonConvert.DeserializeObject<Subscription>(message);
+                // Deserialize the Service Bus message body to a Subscription object
+                var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(message.Body));
 
                 // Add the new subscription to the DbContext
-                await _dbContext.Subscriptions.AddAsync(subscription);
+                await dbContext.Subscriptions.AddAsync(subscription);
 
                 // Save changes in the DbContext to Cosmos DB
-                await _dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
 
-                _logger.LogInformation($"Subscription for user {subscription.UserId} to post {subscription.PostId} stored in Cosmos DB.");
+                // logger.LogInformation($"Subscription for user {subscription.SubscriberUserId} to post {subscription.PostId} stored in Cosmos DB.");
+                logger.LogInformation("New subscription added to Cosmos DB");
             }
              
             catch (Exception ex)
