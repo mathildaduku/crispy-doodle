@@ -10,8 +10,9 @@ using System.Configuration;
 var host = new HostBuilder()
     .ConfigureAppConfiguration(config =>
     {
-        config.AddEnvironmentVariables();
         config.AddJsonFile("local.settings.json", optional: true, reloadOnChange: true);
+        config.AddEnvironmentVariables();
+
     })
     .ConfigureFunctionsWebApplication()
     .ConfigureServices(services =>
@@ -23,5 +24,7 @@ var host = new HostBuilder()
 
     })
     .Build();
+
+await host.Services.GetService<AppDbContext>().Database.EnsureCreatedAsync();
 
 host.Run();

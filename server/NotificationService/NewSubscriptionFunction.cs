@@ -25,20 +25,19 @@ namespace NotificationService
         public async Task Run(
             [ServiceBusTrigger("mytopic", "mysubscription", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
-            ServiceBusMessageActions messageActions,
-            AppDbContext dbContext)
+            ServiceBusMessageActions messageActions)
         {
             _logger.LogInformation("Message ID: {id}", message.MessageId);
-            _logger.LogInformation("Message Body: {body}", message.Body);
+            _logger.LogInformation("Message Body: {body}", Encoding.UTF8.GetString(message.Body.ToArray()));
             _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
             try
             {
                 // Deserialize the Service Bus message body to a Subscription object
-                var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(message.Body));
+                var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(message.Body.ToArray()));
 
                 // Add the new subscription to the DbContext
-                await _dbContext.Subscriptions.AddAsync(subscription);
+                _dbContext.Subscriptions.Add(subscription);
 
                 // Save changes in the DbContext to Cosmos DB
                 await _dbContext.SaveChangesAsync();
@@ -47,10 +46,9 @@ namespace NotificationService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error processing new subscription: {ex.Message}");
+                _logger.LogError(ex, "Error processing new subscription");
             }
-
-            // Complete the message
+            // Complete the message to remove it from the queue
             await messageActions.CompleteMessageAsync(message);
         }
     }
