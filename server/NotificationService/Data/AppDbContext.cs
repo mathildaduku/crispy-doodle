@@ -37,7 +37,7 @@ namespace NotificationService.Data
                 .ToContainer("Subscriptions")
                 .HasPartitionKey(s => s.SubscriptionId);
 
-            modelBuilder.Entity<Models.User>().OwnsMany(u => u.Subscriptions);
+            modelBuilder.Entity<Models.User>().HasMany(u => u.Subscriptions);
         }
 
         public DbSet<Models.User> Users { get; set; }

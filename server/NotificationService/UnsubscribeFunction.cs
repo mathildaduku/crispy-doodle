@@ -24,7 +24,7 @@ namespace NotificationService
 
         [Function(nameof(UnsubscribeFunction))]
         public async Task Run(
-            [ServiceBusTrigger("unsubscribe-topic", "unsubscribe-subscription", Connection = "ServiceBusConnection")]
+            [ServiceBusTrigger("mytopic", "mysubscription", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
@@ -53,10 +53,12 @@ namespace NotificationService
         private async Task HandleUserUnfollowEvent(Subscription unsubscribeData)
         {
             // Find and update subscription record for the unfollowed user
-            var unfollowedUserSubscription = await _dbContext.Subscriptions.FirstOrDefaultAsync(s => s.UserId == unsubscribeData.UserId);
+            var unfollowedUserSubscription = await _dbContext.Subscriptions.FirstOrDefaultAsync(s => s.SubscriptionId == unsubscribeData.SubscriptionId);
             if (unfollowedUserSubscription != null)
             {
-                unfollowedUserSubscription.IsActive = false; // Deactivate subscription
+                // Deactivate subscription
+                _dbContext.Remove(unfollowedUserSubscription);
+
             }
 
             await _dbContext.SaveChangesAsync();
