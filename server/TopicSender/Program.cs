@@ -16,7 +16,7 @@ class Program
     {
         // Create a new subscription
         var newSubscription = new Subscription { /* Subscription details */ };
-
+        
         // Send the new subscription message
         await SendNewSubscriptionAsync(newSubscription);
 
