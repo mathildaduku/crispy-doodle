@@ -55,6 +55,25 @@
         "PUT",
         "DELETE"
       ]
+    },
+
+    //Subscription API Config
+    {
+      "DownstreamPathTemplate": "/api/sub/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "UpstreamPathTemplate": "/api/sub/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ]
     }
   ],
   "GlobalConfiguration": {
