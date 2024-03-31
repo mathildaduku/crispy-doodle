@@ -1,11 +1,8 @@
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NotificationService.Data;
 using NotificationService.Models;
 
 namespace NotificationService
@@ -13,12 +10,12 @@ namespace NotificationService
     public class NewUserFunction
     {
         private readonly ILogger<NewUserFunction> _logger;
-        private readonly AppDbContext _dbContext;
+        private readonly IUserService _userService;
 
-        public NewUserFunction(ILogger<NewUserFunction> logger, AppDbContext dbContext)
+        public NewUserFunction(ILogger<NewUserFunction> logger, IUserService userService)
         {
             _logger = logger;
-            _dbContext = dbContext;
+            _userService = userService;
         }
 
         [Function(nameof(NewUserFunction))]
@@ -30,19 +27,25 @@ namespace NotificationService
             _logger.LogInformation("Message ID: {id}", message.MessageId);
             _logger.LogInformation("Message Body: {body}", message.Body);
             _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
-try
+            
+            try
             {
                 // Deserialize the message body to a User object
                 var newUser = JsonConvert.DeserializeObject<User>(Encoding.UTF8.GetString(message.Body.ToArray()));
 
-                // Add the user to the  DbContext
-                _dbContext.Users.Add(newUser);
+                if (newUser != null)
+                {
+                    // Add the user to the DbContext
+                    await _userService.AddUserAsync(newUser);
 
-                // Save changes in the DbContext to Cosmos DB
-                await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation($"New user with ID '{newUser.UserId}' stored in Cosmos DB.");
+                    _logger.LogInformation($"New user with ID '{newUser.UserId}' stored in Cosmos DB.");
+                }
+                else
+                {
+                    _logger.LogError("Error processing new user: User object is null.");
+                }
             }
+
             catch (Exception ex)
             {
                 _logger.LogError($"Error processing new user: {ex.Message}");
