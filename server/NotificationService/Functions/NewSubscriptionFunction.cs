@@ -1,11 +1,8 @@
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NotificationService.Data;
 using NotificationService.Models;
 
 namespace NotificationService
@@ -13,12 +10,12 @@ namespace NotificationService
     public class NewSubscriptionFunction
     {
         private readonly ILogger<NewSubscriptionFunction> _logger;
-        private readonly AppDbContext _dbContext;
+        private readonly ISubscriptionService _subscriptionService;
 
-        public NewSubscriptionFunction(ILogger<NewSubscriptionFunction> logger, AppDbContext dbContext)
+        public NewSubscriptionFunction(ILogger<NewSubscriptionFunction> logger, ISubscriptionService subscriptionService)
         {
             _logger = logger;
-            _dbContext = dbContext;
+            _subscriptionService = subscriptionService;
         }
 
         [Function(nameof(NewSubscriptionFunction))]
@@ -35,15 +32,17 @@ namespace NotificationService
             {
                 // Deserialize the Service Bus message body to a Subscription object
                 var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(message.Body.ToArray()));
-
+            
+            if (subscription != null){
                 // Add the new subscription to the DbContext
-                _dbContext.Subscriptions.Add(subscription);
-
-                // Save changes in the DbContext to Cosmos DB
-                await _dbContext.SaveChangesAsync();
-
+                await _subscriptionService.AddSubscriptionAsync(subscription);
                 _logger.LogInformation("New subscription added to Cosmos DB");
+            } 
+            else
+            {
+                _logger.LogWarning("Invalid subscription object");
             }
+        }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing new subscription");
@@ -53,3 +52,5 @@ namespace NotificationService
         }
     }
 }
+
+
