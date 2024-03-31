@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SubscriptionReceiver", "Sub
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubscriptionReceiver", "SubscriptionReceiver\SubscriptionReceiver\SubscriptionReceiver.csproj", "{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{0C9744CD-0C1E-4AF7-8B09-C4CC5FBA66A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2114ADFD-1745-428E-BA49-ADC6FFFD7BD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C9744CD-0C1E-4AF7-8B09-C4CC5FBA66A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C9744CD-0C1E-4AF7-8B09-C4CC5FBA66A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C9744CD-0C1E-4AF7-8B09-C4CC5FBA66A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C9744CD-0C1E-4AF7-8B09-C4CC5FBA66A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

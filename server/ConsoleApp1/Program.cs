@@ -10,13 +10,12 @@ using Microsoft.Azure.ServiceBus;
 class Program
 {
     private const string ServiceBusConnectionString = "";
-    private const string TopicName = "mytopic";
+    private const string TopicName = "posttopic";
 
     static async Task Main(string[] args)
     {
         // Create a new subscription
-        var newSubscription = new User { UserId = Guid.NewGuid(), FirstName = "", LastName = "", Email = "" };
-        newSubscription.Subscriptions = new List<Subscription>() { new Subscription { SubscriptionId = Guid.NewGuid(), SubscriberUserId = newSubscription.UserId, NotificationTargetUserId = Guid.Parse("") } };
+        var newSubscription = new User { UserId = Guid.Parse(""), FirstName = "", LastName = "", Email = ""};
         
         // Send the new subscription message
         await SendNewSubscriptionAsync(newSubscription);
@@ -51,7 +50,6 @@ class Program
         }
     }
 }
-
 
     public class User
     {

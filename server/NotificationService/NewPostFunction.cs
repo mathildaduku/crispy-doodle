@@ -1,5 +1,4 @@
 using System;
-using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
@@ -27,7 +26,7 @@ namespace NotificationService
 
         [Function(nameof(NewPostFunction))]
         public async Task Run(
-            [ServiceBusTrigger("mytopic", "mysubscription", Connection = "ServiceBusConnection")]
+            [ServiceBusTrigger("posttopic", "postsubscription", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
@@ -37,58 +36,69 @@ namespace NotificationService
 
             try
             {
-                // Deserialize the Service Bus message body to a Subscription object
-                var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(message.Body.ToArray()));
+                // Deserialize the Service Bus message body to a User object
+                var personthatmadepostdetails = JsonConvert.DeserializeObject<User>(Encoding.UTF8.GetString(message.Body.ToArray()));
 
                 // Fetch all subscriptions for the specified target user
-                var subscriptions = await _dbContext.Subscriptions
-                    .Where(s => s.NotificationTargetUserId == subscription.NotificationTargetUserId)
+                var allSubscriptions = await _dbContext.Subscriptions
+                    .Where(s => s.NotificationTargetUserId == personthatmadepostdetails.UserId)
                     .ToListAsync();
 
-                foreach (var subscriberUser in subscriptions)
+                // send email notification to all subscribers
+                foreach (var subscriberUser in allSubscriptions)
                 {
                     // Fetch the associated user for the subscription
-                    var subscriber = await _dbContext.Users.FindAsync(subscription.SubscriberUserId);
+                    var subscriber = await _dbContext.Users.FindAsync(subscriberUser.SubscriberUserId);
+            
                     if (subscriber == null)
                     {
-                        _logger.LogError($"Subscriber not found for user ID: {subscription.SubscriberUserId}");
+                        _logger.LogError($"Subscriber not found for user ID: {subscriberUser.SubscriberUserId}");
                         continue;
                     }
 
-                    // Send notification to the subscriber
-                    await SendNotification(subscriber, newPostData);
+                    var person = await _dbContext.Users.FindAsync(subscriberUser.SubscriberUserId);
+                    if (person != null)
+                    {
+                        // Send notification to the subscriber
+                        await SendNotification(person);
+                        // await SendNotification(subscriber, newPostData);
 
-                    _logger.LogInformation($"Notification sent to {subscriber.Email}");
+                        _logger.LogInformation($"Notification sent to {person.Email}");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error sending notifications: {ex.Message}");
             }
+
+            // Complete the message
+        await messageActions.CompleteMessageAsync(message);
         }
 
-        private async Task SendNotification(Subscription subscriber, ServiceBusReceivedMessage messagee)
+        private async Task SendNotification(User subscriber)
+        // private async Task SendNotification(User subscriber, ServiceBusReceivedMessage messagee)
         {
-            // Deserialize the Service Bus message body to a Subscription object
-            var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(messagee.Body.ToArray()));
+            // // Deserialize the Service Bus message body to a Subscription object
+            // var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(messagee.Body.ToArray()));
 
             try
             {
                 // Create email message
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Mathilda", "mathildaduku@gmail.com"));
-                message.To.Add(new MailboxAddress(subscriber.SubscriberUserId.email));
+                message.From.Add(new MailboxAddress("", ""));
+                message.To.Add(new MailboxAddress(subscriber.FirstName, subscriber.Email ));
                 message.Subject = "New Post Notification";
                 message.Body = new TextPart("plain")
                 {
-                    Text = $"Hi {subscriber.Name},\n\nA new post with ID {newPostData.PostId} has been published.\n\nRegards,\nYour Application"
+                    Text = $"Hi {subscriber.FirstName},\n\nA new post has been published.\n\nRegards,\nCrispy Doodle Team"
                 };
 
                 // Connect to SMTP server and send email
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync("smtp.example.com", 587, false);
-                    await client.AuthenticateAsync("your-email@example.com", "your-email-password");
+                    await client.ConnectAsync("smtp.gmail.com", 465, true);
+                    await client.AuthenticateAsync("", "");
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
                 }
@@ -101,8 +111,7 @@ namespace NotificationService
             }
         }
 
-        // Complete the message
-        await messageActions.CompleteMessageAsync(message);
-        }
+        
+        
     }
 }
