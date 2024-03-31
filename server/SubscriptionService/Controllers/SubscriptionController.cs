@@ -33,7 +33,7 @@ namespace SubscriptionService.Controllers
                 var followerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
                 if (string.IsNullOrEmpty(followerId))
                 {
-                    _response.Message = "User not found.";
+                    _response.Message = "User not found..";
                     return NotFound(_response);
                 }
 
