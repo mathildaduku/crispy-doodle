@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\client\\doodleclient\\src\\app",
+    "\\client\\doodleclient\\src\\app\\(platform)",
+    "\\client\\doodleclient\\src\\app\\(platform)\\(dashboard)",
+    "\\client\\doodleclient\\src\\app\\(platform)\\(dashboard)\\home",
+    "\\server",
+    "\\server\\SubscriptionService",
+    "\\server\\SubscriptionService\\Controllers"
+  ],
+  "SelectedNode": "\\server\\SubscriptionService\\Controllers\\SubscriptionController.cs",
+  "PreviewInSolutionExplorer": false
+}

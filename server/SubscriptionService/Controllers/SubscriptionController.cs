@@ -33,7 +33,7 @@ namespace SubscriptionService.Controllers
                 var followerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
                 if (string.IsNullOrEmpty(followerId))
                 {
-                    _response.Message = "User not found..";
+                    _response.Message = "User not found.";
                     return NotFound(_response);
                 }
 
@@ -96,6 +96,56 @@ namespace SubscriptionService.Controllers
 
                 _response.Message = "Successfully unfollowed user.";
                 return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.Message = ex.Message;
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpGet("followers")]
+        [Authorize]
+        public async Task<IActionResult> GetFollowersAsync()
+        {
+            try
+            {
+                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _response.Message = "User not found.";
+                    return NotFound(_response);
+                }
+
+                // Retrieve followers of the authenticated user.
+                var followers = await _followService.GetFollowersAsync(userId);
+                _response.Message = "Successfully retrieved followers.";
+                return Ok(followers);
+            }
+            catch (Exception ex)
+            {
+                _response.Message = ex.Message;
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpGet("followees")]
+        [Authorize]
+        public async Task<IActionResult> GetFolloweesAsync()
+        {
+            try
+            {
+                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _response.Message = "User not found.";
+                    return NotFound(_response);
+                }
+
+                // Retrieve followees of the authenticated user.
+                var followees = await _followService.GetFolloweesAsync(userId);
+
+                return Ok(followees);
             }
             catch (Exception ex)
             {
