@@ -28,7 +28,6 @@ namespace NotificationService
             _logger.LogInformation("Message Body: {body}", message.Body);
             _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
-
             try{
                 // Deserialize the message body to a User object
                 var user = JsonConvert.DeserializeObject<User>(Encoding.UTF8.GetString(message.Body.ToArray()));

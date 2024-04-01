@@ -1,6 +1,4 @@
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +14,12 @@ namespace NotificationService
     public class NewPostFunction
     {
         private readonly ILogger<NewPostFunction> _logger;
-        private readonly AppDbContext _dbContext;
+        private readonly IPostService _postService;
 
-        public NewPostFunction(ILogger<NewPostFunction> logger, AppDbContext dbContext)
+        public NewPostFunction(ILogger<NewPostFunction> logger, IPostService postService)
         {
             _logger = logger;
-            _dbContext = dbContext;
+            _postService = postService;
         }
 
         [Function(nameof(NewPostFunction))]
@@ -115,3 +113,6 @@ namespace NotificationService
         
     }
 }
+
+
+

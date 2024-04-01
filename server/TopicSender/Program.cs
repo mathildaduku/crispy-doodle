@@ -15,8 +15,12 @@ class Program
     static async Task Main(string[] args)
     {
         // Create a new subscription
-        var newSubscription = new User { UserId = Guid.NewGuid(), FirstName = "", LastName = "", Email = "" };
-        newSubscription.Subscriptions = new List<Subscription>() { new Subscription { SubscriptionId = Guid.NewGuid(), SubscriberUserId = newSubscription.UserId, NotificationTargetUserId = Guid.Parse("") } };
+        var newSubscription = new Subscription
+        {
+            SubscriptionId = Guid.NewGuid(),
+            SubscriberUserId = Guid.NewGuid(),
+            NotificationTargetUserId = Guid.NewGuid()
+        };
         
         // Send the new subscription message
         await SendNewSubscriptionAsync(newSubscription);
@@ -25,7 +29,7 @@ class Program
         Console.ReadLine();
     }
 
-    static async Task SendNewSubscriptionAsync(User newSubscription)
+    static async Task SendNewSubscriptionAsync(Subscription newSubscription)
     {
         try
         {

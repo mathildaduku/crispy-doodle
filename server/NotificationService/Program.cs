@@ -23,6 +23,7 @@ var host = new HostBuilder()
         services.AddDbContext<AppDbContext>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IPostService, PostService>();
 
     })
     .Build();
