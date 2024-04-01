@@ -20,8 +20,12 @@ public class UserService : IUserService
                 await _dbContext.SaveChangesAsync();
     }
 
-    public Task DeleteUserAsync(User user)
+    public async Task DeleteUserAsync(User user)
     {
-        throw new NotImplementedException();
+                // Remove the user from the DbContext
+                _dbContext.Users.Remove(user);
+
+                // Save changes in the DbContext to Cosmos DB
+                await _dbContext.SaveChangesAsync();
     }
 }

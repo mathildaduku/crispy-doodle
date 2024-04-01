@@ -22,6 +22,7 @@ var host = new HostBuilder()
         services.AddSingleton<FunctionConfiguration>();
         services.AddDbContext<AppDbContext>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
+        services.AddScoped<IUserService, UserService>();
 
     })
     .Build();

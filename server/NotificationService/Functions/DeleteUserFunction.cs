@@ -1,6 +1,4 @@
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
@@ -12,12 +10,12 @@ namespace NotificationService
     public class DeleteUserFunction
     {
         private readonly ILogger<DeleteUserFunction> _logger;
-        private readonly AppDbContext _dbContext;
+        private readonly IUserService _userService;
 
-        public DeleteUserFunction(ILogger<DeleteUserFunction> logger, AppDbContext dbContext)
+        public DeleteUserFunction(ILogger<DeleteUserFunction> logger, IUserService userService)
         {
             _logger = logger;
-            _dbContext = dbContext;
+            _userService = userService;
         }
 
         [Function(nameof(DeleteUserFunction))]
@@ -35,12 +33,18 @@ namespace NotificationService
                 // Deserialize the message body to a User object
                 var user = JsonConvert.DeserializeObject<User>(Encoding.UTF8.GetString(message.Body.ToArray()));
                 
-                // Remove the user from the DbContext
-                _dbContext.Users.Remove(user);
+                if (user != null)
+                {
+                    // Remove the user from the DbContext
+                    await _userService.DeleteUserAsync(user);
 
-                // Save changes in the DbContext to Cosmos DB
-            
-                await _dbContext.SaveChangesAsync();
+                    _logger.LogInformation($"User with ID '{user.UserId}' deleted from Cosmos DB.");
+                }
+                else
+                {
+                    _logger.LogError("Error processing delete user: User object is null.");
+                }
+ 
                 } catch (Exception ex)
                 {
                     _logger.LogError($"Error processing delete user: {ex.Message}");
