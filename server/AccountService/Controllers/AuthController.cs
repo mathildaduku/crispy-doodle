@@ -1,10 +1,7 @@
 ﻿using AccountService.Dto.Request;
 using AccountService.Dto.Response;
-using AccountService.Helpers;
 using AccountService.Models;
 using AutoMapper;
-using Contracts;
-using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -21,17 +18,15 @@ namespace AccountService.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly IMapper _mapper;
-        private readonly IPublishEndpoint _publishEndpoint;
-        private readonly IConfiguration _configuration;
-        private readonly ApiResponse<object> _response = new ApiResponse<object>();
 
-        public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, IMapper mapper, IPublishEndpoint publishEndpoint)
+        private readonly IConfiguration _configuration;
+
+        public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, IMapper mapper)
         {
             _signInManager = signInManager;
             _configuration = configuration;
             _userManager = userManager;
             _mapper = mapper;
-            _publishEndpoint = publishEndpoint;
         }
 
         [HttpPost("register")]
@@ -47,50 +42,34 @@ namespace AccountService.Controllers
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
-
             if (!result.Succeeded)
             {
-                _response.Status = ResponseStatus.Error;
-                _response.Message = result.Errors.FirstOrDefault()?.Description ?? string.Empty;
-                return BadRequest(_response);
+                return BadRequest(result.Errors);
             }
-
-            await _publishEndpoint.Publish(_mapper.Map<AccountCreated>(user));
-
-            _response.Status = ResponseStatus.Success;
-            _response.Message = "User created successfully";
-            return Ok(_response);
+            return Ok(new { Message = "User created successfully" });
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
             if (user == null)
             {
-                _response.Status = ResponseStatus.Error;
-                _response.Message = "Invalid username or password";
-                return BadRequest(_response);
+                return BadRequest("Invalid username or password");
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: false);
 
-            if (!result.Succeeded)
+            if (result.Succeeded)
             {
-                _response.Status = ResponseStatus.Error;
-                _response.Message = "Invalid username or password";
-                return BadRequest(_response);
+                // Generate authentication token
+                var token = GenerateJwtToken(user);
+
+                return Ok(new { Token = token, User = _mapper.Map<UserDto>(user) });
             }
 
-            // Generate authentication token
-            var token = GenerateJwtToken(user);
-
-
-            _response.Status = ResponseStatus.Success;
-            _response.Message = "User logged in successfully";
-            _response.Result = new { Token = token, User = _mapper.Map<UserDto>(user) };
-            return Ok(_response);
+            return BadRequest("Invalid username or password");
         }
 
         private string GenerateJwtToken(User user)
@@ -98,7 +77,7 @@ namespace AccountService.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName)
+                new Claim(ClaimTypes.Name, user.FirstName + user.LastName)
                 // Add additional claims if needed
             };
 

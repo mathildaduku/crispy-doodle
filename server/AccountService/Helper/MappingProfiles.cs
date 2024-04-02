@@ -2,18 +2,14 @@
 using AccountService.Dto.Response;
 using AccountService.Models;
 using AutoMapper;
-using Contracts;
 
-namespace AccountService.Helpers
+namespace AccountService.Helper
 {
     public class MappingProfiles : Profile
     {
         public MappingProfiles()
         {
             CreateMap<User, UserDto>();
-            CreateMap<User, AccountCreated>();
-            CreateMap<User, AccountUpdated>();
-            CreateMap<User, AccountDeleted>();
         }
     }
 }
