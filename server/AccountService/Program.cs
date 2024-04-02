@@ -4,13 +4,20 @@ using Microsoft.AspNetCore.Identity;
 using AccountService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using AspNetCore.Identity.CosmosDb.Extensions;
 using System.Text;
+using MassTransit;
+using Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+});
+;
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -44,7 +51,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-Console.WriteLine(builder.Configuration["JWT:Key"]);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -64,8 +70,45 @@ builder.Services.AddAuthentication(options =>
 
 });
 
+builder.Services.AddMassTransit(x =>
+{
+    //x.AddEntityFrameworkOutbox<AppDbContext>(o =>
+    //{
+    //    o.QueryDelay = TimeSpan.FromSeconds(10);
+    //    o.use();
+    //    o.UseBusOutbox();
+    //});
+    x.AddConsumersFromNamespaceContaining<AccountCreated>();
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("account", false));
+
+    x.UsingAzureServiceBus((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["AzureServiceBusConnectionString"]);
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000")
+
+                .AllowAnyHeader()
+
+                .WithMethods("GET", "POST", "PATCH", "PUT", "DELETE")
+
+                .SetIsOriginAllowed((host) => true)
+
+                .AllowCredentials();
+        });
+});
+
 
 var app = builder.Build();
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
