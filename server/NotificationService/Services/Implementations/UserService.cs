@@ -13,19 +13,24 @@ public class UserService : IUserService
     }
     public async Task AddUserAsync(User newUser)
     {
-                // Add the user to the  DbContext
-                _dbContext.Users.Add(newUser);
+        // Add the user to the  DbContext
+        _dbContext.Users.Add(newUser);
 
-                // Save changes in the DbContext to Cosmos DB
-                await _dbContext.SaveChangesAsync();
+        // Save changes in the DbContext to Cosmos DB
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteUserAsync(User user)
     {
-                // Remove the user from the DbContext
-                _dbContext.Users.Remove(user);
+        // Remove the user from the DbContext
+        _dbContext.Users.Remove(user);
 
-                // Save changes in the DbContext to Cosmos DB
-                await _dbContext.SaveChangesAsync();
+        // Save changes in the DbContext to Cosmos DB
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<User?> GetUserAsync(Guid userId)
+    {
+        return await _dbContext.Users.FindAsync(userId);
     }
 }
