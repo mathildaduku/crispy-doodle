@@ -1,4 +1,5 @@
-﻿using NotificationService.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using NotificationService.Data;
 using NotificationService.Models;
 
 namespace NotificationService;
@@ -27,5 +28,26 @@ public class UserService : IUserService
 
                 // Save changes in the DbContext to Cosmos DB
                 await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateUserAsync(User user)
+    {
+
+            // Retrieve the existing user from the database
+            var existingUser = await _dbContext.Users.FindAsync(user.UserId);
+            if (existingUser == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            // Update the properties of the existing user
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            existingUser.Email = user.Email;
+           
+
+            // Save the changes to the database
+            _dbContext.Users.Update(existingUser);
+            await _dbContext.SaveChangesAsync();
     }
 }
