@@ -1,8 +1,11 @@
-/*using System.Text;
+using System.Text;
+using AutoMapper;
 using Azure.Messaging.ServiceBus;
+using Contracts;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NotificationService.Helpers;
 using NotificationService.Models;
 
 namespace NotificationService
@@ -11,16 +14,18 @@ namespace NotificationService
     {
         private readonly ILogger<DeleteUserFunction> _logger;
         private readonly IUserService _userService;
+        private readonly IMapper _mapper;
 
-        public DeleteUserFunction(ILogger<DeleteUserFunction> logger, IUserService userService)
+        public DeleteUserFunction(ILogger<DeleteUserFunction> logger, IUserService userService, IMapper mapper)
         {
             _logger = logger;
             _userService = userService;
+            _mapper = mapper;
         }
 
         [Function(nameof(DeleteUserFunction))]
         public async Task Run(
-            [ServiceBusTrigger("mytopic", "mysubscription", Connection = "ServiceBusConnection")]
+            [ServiceBusTrigger("contracts/accountdeleted", "notification-account-deleted", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
@@ -30,10 +35,12 @@ namespace NotificationService
 
             try{
                 // Deserialize the message body to a User object
-                var user = JsonConvert.DeserializeObject<User>(Encoding.UTF8.GetString(message.Body.ToArray()));
-                
-                if (user != null)
+                var serviceBusMessage = JsonConvert.DeserializeObject<CustomServiceBusMessage<AccountDeleted>>(Encoding.UTF8.GetString(message.Body.ToArray()));
+                var accountDeletedMessage = serviceBusMessage.Message;
+                if (accountDeletedMessage != null)
                 {
+                    var user = _mapper.Map<User>(accountDeletedMessage);
+                    
                     // Remove the user from the DbContext
                     await _userService.DeleteUserAsync(user);
 
@@ -53,4 +60,3 @@ namespace NotificationService
         }
     }
 }
-*/
