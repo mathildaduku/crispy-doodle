@@ -1,4 +1,4 @@
-/*using System.Text;
+using System.Text;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -8,23 +8,29 @@ using Newtonsoft.Json;
 using NotificationService.Data;
 using NotificationService.Models;
 using MailKit.Net.Smtp;
+using NotificationService.Helpers;
+using Contracts;
 
 namespace NotificationService
 {
     public class NewPostFunction
     {
         private readonly ILogger<NewPostFunction> _logger;
-        private readonly IPostService _postService;
+        private readonly ISubscriptionService _subscriptionService;
+        private readonly IUserService _userService;
+        private readonly IEmailService _emailService;
 
-        public NewPostFunction(ILogger<NewPostFunction> logger, IPostService postService)
+        public NewPostFunction(ILogger<NewPostFunction> logger, ISubscriptionService subscriptionService, IUserService userService, IEmailService emailService)
         {
             _logger = logger;
-            _postService = postService;
+            _subscriptionService = subscriptionService;
+            _userService = userService;
+            _emailService = emailService;
         }
 
         [Function(nameof(NewPostFunction))]
         public async Task Run(
-            [ServiceBusTrigger("posttopic", "postsubscription", Connection = "ServiceBusConnection")]
+            [ServiceBusTrigger("contracts/postcreated", "notification-post-created", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
@@ -35,34 +41,37 @@ namespace NotificationService
             try
             {
                 // Deserialize the Service Bus message body to a User object
-                var personthatmadepostdetails = JsonConvert.DeserializeObject<User>(Encoding.UTF8.GetString(message.Body.ToArray()));
+                var postCreated = JsonConvert.DeserializeObject<CustomServiceBusMessage<PostCreated>>(Encoding.UTF8.GetString(message.Body.ToArray()))?.Message;
 
                 // Fetch all subscriptions for the specified target user
-                var allSubscriptions = await _dbContext.Subscriptions
-                    .Where(s => s.NotificationTargetUserId == personthatmadepostdetails.UserId)
-                    .ToListAsync();
+                var allSubscriptions = await _subscriptionService.GetUserSubscribers(postCreated.Author);
 
                 // send email notification to all subscribers
                 foreach (var subscriberUser in allSubscriptions)
                 {
                     // Fetch the associated user for the subscription
-                    var subscriber = await _dbContext.Users.FindAsync(subscriberUser.SubscriberUserId);
-            
+                    var subscriber = await _userService.GetUserAsync(subscriberUser.SubscriberUserId);
+
                     if (subscriber == null)
                     {
                         _logger.LogError($"Subscriber not found for user ID: {subscriberUser.SubscriberUserId}");
-                        continue;
+                        throw new Exception($"Subscriber not found for user ID: {subscriberUser.SubscriberUserId}");
                     }
 
-                    var person = await _dbContext.Users.FindAsync(subscriberUser.SubscriberUserId);
-                    if (person != null)
+                    // Send notification to the subscriber
+                    try
                     {
-                        // Send notification to the subscriber
-                        await SendNotification(person);
-                        // await SendNotification(subscriber, newPostData);
+                        await _emailService.SendHtmlEmailAsync(subscriber.Email, "New Post Notification", "NewPostNotification", new { subscriber.FirstName });
 
-                        _logger.LogInformation($"Notification sent to {person.Email}");
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Error sending notification to {subscriber.Email}: {ex.Message}");
+                    }
+                    // await SendNotification(subscriber, newPostData);
+
+                    _logger.LogInformation($"Notification sent to {subscriber.Email}");
+
                 }
             }
             catch (Exception ex)
@@ -71,49 +80,8 @@ namespace NotificationService
             }
 
             // Complete the message
-        await messageActions.CompleteMessageAsync(message);
+            await messageActions.CompleteMessageAsync(message);
         }
 
-        private async Task SendNotification(User subscriber)
-        // private async Task SendNotification(User subscriber, ServiceBusReceivedMessage messagee)
-        {
-            // // Deserialize the Service Bus message body to a Subscription object
-            // var subscription = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(messagee.Body.ToArray()));
-
-            try
-            {
-                // Create email message
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("", ""));
-                message.To.Add(new MailboxAddress(subscriber.FirstName, subscriber.Email ));
-                message.Subject = "New Post Notification";
-                message.Body = new TextPart("plain")
-                {
-                    Text = $"Hi {subscriber.FirstName},\n\nA new post has been published.\n\nRegards,\nCrispy Doodle Team"
-                };
-
-                // Connect to SMTP server and send email
-                using (var client = new SmtpClient())
-                {
-                    await client.ConnectAsync("smtp.gmail.com", 465, true);
-                    await client.AuthenticateAsync("", "");
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
-                }
-
-                _logger.LogInformation($"Notification sent to {subscriber.Email}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error sending notification to {subscriber.Email}: {ex.Message}");
-            }
-        }
-
-        
-        
     }
 }
-
-
-
-*/
