@@ -1,12 +1,10 @@
-/*using System;
 using System.Text;
-using System.Threading.Tasks;
+using AutoMapper;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NotificationService.Data;
+using NotificationService.Helpers;
 using NotificationService.Models;
 
 namespace NotificationService
@@ -14,17 +12,19 @@ namespace NotificationService
     public class UnsubscribeFunction
     {
         private readonly ILogger<UnsubscribeFunction> _logger;
-        private readonly AppDbContext _dbContext;
+        private readonly ISubscriptionService _subscriptionService;
+        private readonly IMapper _mapper;
 
-        public UnsubscribeFunction(ILogger<UnsubscribeFunction> logger, AppDbContext dbContext)
+        public UnsubscribeFunction(ILogger<UnsubscribeFunction> logger, ISubscriptionService subscriptionService, IMapper mapper)
         {
             _logger = logger;
-            _dbContext = dbContext;
+            _subscriptionService = subscriptionService;
+            _mapper = mapper;
         }
 
         [Function(nameof(UnsubscribeFunction))]
         public async Task Run(
-            [ServiceBusTrigger("mytopic", "mysubscription", Connection = "ServiceBusConnection")]
+            [ServiceBusTrigger("contracts/subscriptiondeleted", "notification-account-created", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
@@ -35,11 +35,23 @@ namespace NotificationService
             try
             {
                 // Deserialize the message
-                var unsubscribeData = JsonConvert.DeserializeObject<Subscription>(Encoding.UTF8.GetString(message.Body.ToArray()));
-                // Handle UserUnfollow event
-                await HandleUserUnfollowEvent(unsubscribeData);
+                var serviceBusMessage = JsonConvert.DeserializeObject<CustomServiceBusMessage<SubscriptionDeleted>>(Encoding.UTF8.GetString(message.Body.ToArray()));
+                var subscriptionDeletedMessage = serviceBusMessage.Message;
+            if (subscriptionDeletedMessage != null)
+            {
+                // Map the SubscriptionDeleted object to a Subscription object
+                var subscription = _mapper.Map<Subscription>(subscriptionDeletedMessage);
 
-                _logger.LogInformation("Subscription status updated successfully");
+                    // Remove subscription from the DbContext
+                    await _subscriptionService.DeleteSubscriptionAsync(subscription);                
+
+                    _logger.LogInformation("Subscription deleted from Cosmos DB");
+            }
+            else
+            {
+                _logger.LogWarning("Invalid subscription object");
+           
+            }
             }
             catch (Exception ex)
             {
@@ -49,20 +61,5 @@ namespace NotificationService
             // Complete the message
             await messageActions.CompleteMessageAsync(message);
         }
-
-        private async Task HandleUserUnfollowEvent(Subscription unsubscribeData)
-        {
-            // Find and update subscription record for the unfollowed user
-            var unfollowedUserSubscription = await _dbContext.Subscriptions.FirstOrDefaultAsync(s => s.SubscriptionId == unsubscribeData.SubscriptionId);
-            if (unfollowedUserSubscription != null)
-            {
-                // Deactivate subscription
-                _dbContext.Remove(unfollowedUserSubscription);
-
-            }
-
-            await _dbContext.SaveChangesAsync();
-        }
     }
 }
-*/
