@@ -67,6 +67,8 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IFollowService, FollowService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISubService, SubService>();
+builder.Services.AddScoped<IUserIdentityService, UserIdentityService>();
+
 
 
 var app = builder.Build();

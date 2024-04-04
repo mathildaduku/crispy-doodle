@@ -2,10 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SubscriptionService.Dto.Request;
 using SubscriptionService.Helpers;
 using SubscriptionService.Services.Interfaces;
-using System.Security.Claims;
+
 
 namespace SubscriptionService.Controllers
 {
@@ -17,14 +16,14 @@ namespace SubscriptionService.Controllers
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly ApiResponse<object> _response = new ApiResponse<object>();
-        private readonly ISubService _subService;
+        private readonly IUserIdentityService _userIdentityService;
 
-        public FollowController(IFollowService followService, IMapper mapper, IUserService userService, ISubService subService)
+        public FollowController(IFollowService followService, IMapper mapper, IUserService userService, IUserIdentityService userIdentityService)
         {
             _followService = followService;
             _mapper = mapper;
             _userService = userService;
-            _subService = subService;
+            _userIdentityService = userIdentityService;
         }
 
         [HttpPost("follow/{followeeId:guid}")]
@@ -33,7 +32,7 @@ namespace SubscriptionService.Controllers
         {
             try
             {
-                var followerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                var followerId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(followerId))
                 {
                     _response.Message = "User not found.";
@@ -76,7 +75,7 @@ namespace SubscriptionService.Controllers
         {
             try
             {
-                var followerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                var followerId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(followerId))
                 {
                     _response.Message = "User not found.";
@@ -112,7 +111,7 @@ namespace SubscriptionService.Controllers
         {
             try
             {
-                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                var userId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(userId))
                 {
                     _response.Message = "User not found.";
@@ -137,7 +136,7 @@ namespace SubscriptionService.Controllers
         {
             try
             {
-                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                var userId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(userId))
                 {
                     _response.Message = "User not found.";

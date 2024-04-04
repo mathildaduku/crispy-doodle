@@ -6,7 +6,7 @@ using SubscriptionService.Data;
 using SubscriptionService.Dto.Request;
 using SubscriptionService.Helpers;
 using SubscriptionService.Services.Interfaces;
-using System.Security.Claims;
+
 
 namespace SubscriptionService.Controllers
 {
@@ -16,16 +16,11 @@ namespace SubscriptionService.Controllers
     {
         private readonly ISubService _subService;
         private readonly ApiResponse<object> _response = new ApiResponse<object>();
-        private readonly AppDbContext _context;
-        private readonly IFollowService _followService;
-        private readonly IMapper _mapper;
-
-        public SubscriptionController( ISubService subService, AppDbContext appDbContext, IFollowService followService, IUserService userService, IMapper mapper)
+        private readonly IUserIdentityService _userIdentityService;
+        public SubscriptionController( ISubService subService, IUserIdentityService userIdentityService)
         {
             _subService = subService;
-            _context = appDbContext;
-            _followService = followService;
-            _mapper = mapper;   
+            _userIdentityService = userIdentityService;
         }
 
 
@@ -35,7 +30,7 @@ namespace SubscriptionService.Controllers
         {
             try
             {
-                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var userId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();
@@ -45,6 +40,13 @@ namespace SubscriptionService.Controllers
                 _response.Status = ResponseStatus.Success;
                 _response.Message = "Subscribed successfully";
                 return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                //exception thrown when user is not following the target user
+                _response.Status = ResponseStatus.Error;
+                _response.Message = ex.Message;
+                return BadRequest(_response);
             }
             catch (Exception ex)
             {
@@ -82,7 +84,7 @@ namespace SubscriptionService.Controllers
         {
             try
             {
-                var subscriberUserId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var subscriberUserId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(subscriberUserId))
                 {
                     return Unauthorized();
@@ -112,7 +114,7 @@ namespace SubscriptionService.Controllers
         {
             try
             {
-                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var userId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();

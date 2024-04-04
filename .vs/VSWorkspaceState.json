@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\server",
+    "\\server\\SubscriptionService",
+    "\\server\\SubscriptionService\\Controllers",
+    "\\server\\SubscriptionService\\Services",
+    "\\server\\SubscriptionService\\Services\\Implementations"
+  ],
+  "SelectedNode": "\\server\\CrispyDoodle.sln",
+  "PreviewInSolutionExplorer": false
+}

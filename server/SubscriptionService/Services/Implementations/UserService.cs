@@ -45,5 +45,12 @@ namespace SubscriptionService.Services.Implementations
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<bool> IsSubscribedAsync(string subscriberUserId, string targetUserId)
+        {
+            var subscription = await _context.Subscriptions.Where(s => s.SubscriberUserId == subscriberUserId && s.TargetUserId == targetUserId).FirstOrDefaultAsync();
+
+            return subscription != null;
+        }
     }
 }
