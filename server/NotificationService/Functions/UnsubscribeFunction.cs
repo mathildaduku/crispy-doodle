@@ -1,6 +1,7 @@
 using System.Text;
 using AutoMapper;
 using Azure.Messaging.ServiceBus;
+using Contracts;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -24,7 +25,7 @@ namespace NotificationService
 
         [Function(nameof(UnsubscribeFunction))]
         public async Task Run(
-            [ServiceBusTrigger("contracts/subscriptiondeleted", "notification-account-created", Connection = "ServiceBusConnection")]
+            [ServiceBusTrigger("contracts/subscriptiondeleted", "notification-subscription-deleted", Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
@@ -41,6 +42,7 @@ namespace NotificationService
             {
                 // Map the SubscriptionDeleted object to a Subscription object
                 var subscription = _mapper.Map<Subscription>(subscriptionDeletedMessage);
+
 
                     // Remove subscription from the DbContext
                     await _subscriptionService.DeleteSubscriptionAsync(subscription);                

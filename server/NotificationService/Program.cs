@@ -31,7 +31,7 @@ var host = new HostBuilder()
         {
             var logger = provider.GetRequiredService<ILogger<EmailService>>();
             var environment = provider.GetRequiredService<IWebHostEnvironment>();
-            var templatesFolderPath = Path.Combine(environment.ContentRootPath, "Emails");
+            var templatesFolderPath = Path.Combine(AppContext.BaseDirectory, "Emails");
             return new EmailService(templatesFolderPath, logger, hostContext.Configuration);
         });
     })

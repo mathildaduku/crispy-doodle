@@ -15,8 +15,8 @@ namespace NotificationService.Helpers
         {
             CreateMap<AccountCreated, User>().ForMember(x=> x.UserId, s => s.MapFrom(d => d.Id));
             CreateMap<AccountDeleted, User>().ForMember(x => x.UserId, s => s.MapFrom(d => d.Id));
-            // CreateMap<SubscriptionCreated, Subscription>().ForMember(x => x.SubscriptionId, s => s.MapFrom(d => d.Id));
-            // CreateMap<SubscriptionDeleted, Subscription>().ForMember(x => x.SubscriptionId, s => s.MapFrom(d => d.Id));
+            CreateMap<SubscriptionCreated, Subscription>().ForMember(x => x.NotificationTargetUserId, s => s.MapFrom(d => d.TargetUserId));
+            CreateMap<SubscriptionDeleted, Subscription>().ForMember(x => x.NotificationTargetUserId, s => s.MapFrom(d => d.TargetUserId));
         }
     }
 }

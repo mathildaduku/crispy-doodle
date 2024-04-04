@@ -1,6 +1,7 @@
 using System.Text;
 using AutoMapper;
 using Azure.Messaging.ServiceBus;
+using Contracts;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
