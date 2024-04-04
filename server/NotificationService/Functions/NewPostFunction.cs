@@ -51,7 +51,6 @@ namespace NotificationService
                 {
                     // Fetch the associated user for the subscription
                     var subscriber = await _userService.GetUserAsync(subscriberUser.SubscriberUserId);
-                    Console.WriteLine("subbbbbbbb>>" + subscriber.Email);
 
                     if (subscriber == null)
                     {

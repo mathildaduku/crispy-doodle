@@ -8,6 +8,10 @@ using Microsoft.Extensions.Logging;
 using NotificationService;
 using NotificationService.Data;
 using System.Configuration;
+using System.Reflection;
+
+var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+var contentRootPath = Path.GetDirectoryName(assemblyLocation);
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(config =>
@@ -31,7 +35,7 @@ var host = new HostBuilder()
         {
             var logger = provider.GetRequiredService<ILogger<EmailService>>();
             var environment = provider.GetRequiredService<IWebHostEnvironment>();
-            var templatesFolderPath = Path.Combine(AppContext.BaseDirectory, "Emails");
+            var templatesFolderPath = Path.Combine(environment.ContentRootPath, "Emails");
             return new EmailService(templatesFolderPath, logger, hostContext.Configuration);
         });
     })
@@ -43,7 +47,7 @@ try
 }
 catch (Exception ex)
 {
-
+    Console.WriteLine($"An error occurred while initializing the database: {ex}");
 }
 
 host.Run();
