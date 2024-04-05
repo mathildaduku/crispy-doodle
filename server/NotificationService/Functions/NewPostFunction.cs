@@ -1,13 +1,8 @@
 using System.Text;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MimeKit;
 using Newtonsoft.Json;
-using NotificationService.Data;
-using NotificationService.Models;
-using MailKit.Net.Smtp;
 using NotificationService.Helpers;
 using Contracts;
 

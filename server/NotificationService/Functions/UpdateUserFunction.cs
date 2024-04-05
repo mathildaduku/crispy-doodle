@@ -37,7 +37,7 @@ namespace NotificationService.Functions
             {
                 // Deserialize the message body to a User object
                 var serviceBusMessage = JsonConvert.DeserializeObject<CustomServiceBusMessage<AccountUpdated>>(Encoding.UTF8.GetString(message.Body.ToArray()));
-                var accountUpdatedMessage = serviceBusMessage.Message;
+                var accountUpdatedMessage = serviceBusMessage?.Message;
 
                 if (accountUpdatedMessage != null)
                 {

@@ -61,9 +61,6 @@ public class EmailService: IEmailService
 
     private string MergeTemplateWithModel(string templateContent, object model)
     {
-        // Replace placeholders in the template with actual values from the model
-        // This can be done in various ways depending on your templating needs
-        // For simplicity, this example uses string.Replace
         foreach (var property in model.GetType().GetProperties())
         {
             var placeholder = $"{{{{{property.Name}}}}}";

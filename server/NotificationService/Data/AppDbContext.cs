@@ -1,11 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NotificationService.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NotificationService.Data
 {
@@ -28,7 +22,7 @@ namespace NotificationService.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configuring Users
-            modelBuilder.Entity<Models.User>()
+            modelBuilder.Entity<User>()
                 .ToContainer("Users")
                 .HasPartitionKey(u => u.UserId);
 
@@ -37,10 +31,10 @@ namespace NotificationService.Data
                 .ToContainer("Subscriptions")
                 .HasPartitionKey(s => s.SubscriptionId);
 
-            modelBuilder.Entity<Models.User>().HasMany(u => u.Subscriptions);
+            modelBuilder.Entity<User>().HasMany(u => u.Subscriptions);
         }
 
-        public DbSet<Models.User> Users { get; set; }
+        public DbSet<User> Users { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
     }
 }

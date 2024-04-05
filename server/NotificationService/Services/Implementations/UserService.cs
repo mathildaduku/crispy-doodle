@@ -37,7 +37,6 @@ public class UserService : IUserService
 
     public async Task UpdateUserAsync(User user)
     {
-
             // Retrieve the existing user from the database
             var existingUser = await _dbContext.Users.FindAsync(user.UserId);
             if (existingUser == null)
@@ -50,7 +49,6 @@ public class UserService : IUserService
             existingUser.LastName = user.LastName;
             existingUser.Email = user.Email;
            
-
             // Save the changes to the database
             _dbContext.Users.Update(existingUser);
             await _dbContext.SaveChangesAsync();
