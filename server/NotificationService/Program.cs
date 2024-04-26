@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationService;
 using NotificationService.Data;
-using System.Configuration;
 using System.Reflection;
 
 var assemblyLocation = Assembly.GetExecutingAssembly().Location;
@@ -30,7 +28,6 @@ var host = new HostBuilder()
         services.AddDbContext<AppDbContext>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IPostService, PostService>();
         services.AddSingleton<IEmailService>(provider =>
         {
             var logger = provider.GetRequiredService<ILogger<EmailService>>();

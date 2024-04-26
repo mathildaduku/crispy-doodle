@@ -31,7 +31,6 @@ public class SubscriptionService : ISubscriptionService
         {
             // Remove subscription from the DbContext
             _dbContext.Remove(unfollowedUserSubscription);
-
         }
 
         await _dbContext.SaveChangesAsync();

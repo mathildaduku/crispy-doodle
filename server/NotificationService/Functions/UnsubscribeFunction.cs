@@ -37,12 +37,11 @@ namespace NotificationService
             {
                 // Deserialize the message
                 var serviceBusMessage = JsonConvert.DeserializeObject<CustomServiceBusMessage<SubscriptionDeleted>>(Encoding.UTF8.GetString(message.Body.ToArray()));
-                var subscriptionDeletedMessage = serviceBusMessage.Message;
+                var subscriptionDeletedMessage = serviceBusMessage?.Message;
             if (subscriptionDeletedMessage != null)
             {
                 // Map the SubscriptionDeleted object to a Subscription object
                 var subscription = _mapper.Map<Subscription>(subscriptionDeletedMessage);
-
 
                     // Remove subscription from the DbContext
                     await _subscriptionService.DeleteSubscriptionAsync(subscription);                

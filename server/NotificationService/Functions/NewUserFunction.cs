@@ -1,6 +1,5 @@
 using System.Text;
 using AutoMapper;
-using Azure;
 using Azure.Messaging.ServiceBus;
 using Contracts;
 using Microsoft.Azure.Functions.Worker;
@@ -38,19 +37,11 @@ namespace NotificationService
             {
                 // Deserialize the message body to a User object
                 var serviceBusMessage = JsonConvert.DeserializeObject<CustomServiceBusMessage<AccountCreated>>(Encoding.UTF8.GetString(message.Body.ToArray()));
-                var accountCreatedMessage = serviceBusMessage.Message;
-
-
-                Console.WriteLine(Encoding.UTF8.GetString(message.Body.ToArray()) + "yooo");
-                Console.WriteLine(accountCreatedMessage + "yeah");
+                var accountCreatedMessage = serviceBusMessage?.Message;
 
                 if (accountCreatedMessage != null)
                 {
                     var newUser = _mapper.Map<User>(accountCreatedMessage);
-
-                    Console.WriteLine(newUser.UserId + "yaga1");
-                    Console.WriteLine(newUser.FirstName + "yaga2");
-                    Console.WriteLine(newUser.LastName + "yaga3");
 
                     // Add the user to the DbContext
                     await _userService.AddUserAsync(newUser);

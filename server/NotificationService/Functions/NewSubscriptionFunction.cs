@@ -37,7 +37,7 @@ namespace NotificationService
             {
                 // Deserialize the Service Bus message body to a Subscription object
                 var serviceBusMessage = JsonConvert.DeserializeObject<CustomServiceBusMessage<SubscriptionCreated>>(Encoding.UTF8.GetString(message.Body.ToArray()));
-                var subscriptionCreatedMessage = serviceBusMessage.Message;
+                var subscriptionCreatedMessage = serviceBusMessage?.Message;
             
             if (subscriptionCreatedMessage != null)
             {

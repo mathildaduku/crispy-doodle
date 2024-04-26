@@ -36,7 +36,7 @@ namespace NotificationService
             try{
                 // Deserialize the message body to a User object
                 var serviceBusMessage = JsonConvert.DeserializeObject<CustomServiceBusMessage<AccountDeleted>>(Encoding.UTF8.GetString(message.Body.ToArray()));
-                var accountDeletedMessage = serviceBusMessage.Message;
+                var accountDeletedMessage = serviceBusMessage?.Message;
                 if (accountDeletedMessage != null)
                 {
                     var user = _mapper.Map<User>(accountDeletedMessage);
