@@ -44,10 +44,10 @@ namespace NotificationService
                 var postCreated = JsonConvert.DeserializeObject<CustomServiceBusMessage<PostCreated>>(Encoding.UTF8.GetString(message.Body.ToArray()))?.Message;
 
                 // Fetch all subscriptions for the specified target user
-                var allSubscriptions = await _subscriptionService.GetUserSubscribers(postCreated.Author);
+                var userSubscriptions = await _subscriptionService.GetUserSubscribers(postCreated.Author);
 
                 // send email notification to all subscribers
-                foreach (var subscriberUser in allSubscriptions)
+                foreach (var subscriberUser in userSubscriptions)
                 {
                     // Fetch the associated user for the subscription
                     var subscriber = await _userService.GetUserAsync(subscriberUser.SubscriberUserId);
