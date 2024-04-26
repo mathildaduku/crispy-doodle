@@ -46,7 +46,10 @@ namespace NotificationService
                 // Fetch all subscriptions for the specified target user
                 var userSubscriptions = await _subscriptionService.GetUserSubscribers(postCreated.Author);
 
-                // send email notification to all subscribers
+                // Prepare a list of tasks
+                var emailTasks = new List<Task>();
+
+                // Prepare to send email notifications to all subscribers
                 foreach (var subscriberUser in userSubscriptions)
                 {
                     // Fetch the associated user for the subscription
@@ -58,21 +61,26 @@ namespace NotificationService
                         throw new Exception($"Subscriber not found for user ID: {subscriberUser.SubscriberUserId}");
                     }
 
-                    // Send notification to the subscriber
-                    try
-                    {
-                        await _emailService.SendHtmlEmailAsync(subscriber.Email, "New Post Notification", "NewPostNotification", new { subscriber.FirstName });
+                    // Prepare to send notification to the subscriber
+                    var emailTask = _emailService.SendHtmlEmailAsync(subscriber.Email, "New Post Notification", "NewPostNotification", new { subscriber.FirstName })
+                        .ContinueWith(t =>
+                        {
+                            if (t.IsFaulted)
+                            {
+                                _logger.LogError($"Error sending notification to {subscriber.Email}: {t.Exception.InnerException.Message}");
+                            }
+                            else
+                            {
+                                _logger.LogInformation($"Notification sent to {subscriber.Email}");
+                            }
+                        });
 
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Error sending notification to {subscriber.Email}: {ex.Message}");
-                    }
-                    // await SendNotification(subscriber, newPostData);
-
-                    _logger.LogInformation($"Notification sent to {subscriber.Email}");
-
+                    // Add the task to the list
+                    emailTasks.Add(emailTask);
                 }
+
+                // Wait for all email sending tasks to complete
+                await Task.WhenAll(emailTasks);
             }
             catch (Exception ex)
             {
@@ -82,6 +90,43 @@ namespace NotificationService
             // Complete the message
             await messageActions.CompleteMessageAsync(message);
         }
-
     }
+    /*                // send email notification to all subscribers
+                    foreach (var subscriberUser in userSubscriptions)
+                    {
+                        // Fetch the associated user for the subscription
+                        var subscriber = await _userService.GetUserAsync(subscriberUser.SubscriberUserId);
+
+                        if (subscriber == null)
+                        {
+                            _logger.LogError($"Subscriber not found for user ID: {subscriberUser.SubscriberUserId}");
+                            throw new Exception($"Subscriber not found for user ID: {subscriberUser.SubscriberUserId}");
+                        }
+
+                        // Send notification to the subscriber
+                        try
+                        {
+                            await _emailService.SendHtmlEmailAsync(subscriber.Email, "New Post Notification", "NewPostNotification", new { subscriber.FirstName });
+
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Error sending notification to {subscriber.Email}: {ex.Message}");
+                        }
+                        // await SendNotification(subscriber, newPostData);
+
+                        _logger.LogInformation($"Notification sent to {subscriber.Email}");
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error sending notifications: {ex.Message}");
+                }
+
+                // Complete the message
+                await messageActions.CompleteMessageAsync(message);
+            }
+
+        }*/
 }
