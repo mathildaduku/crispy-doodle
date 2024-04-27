@@ -35,7 +35,7 @@ namespace SubscriptionService.Controllers
                 var followerId = _userIdentityService.GetUserIdFromClaims(User);
                 if (string.IsNullOrEmpty(followerId))
                 {
-                    _response.Message = "User not found.";
+                    _response.Message = "User not found."; //not auth error
                     return NotFound(_response);
                 }
 

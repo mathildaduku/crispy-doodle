@@ -11,8 +11,9 @@ namespace SubscriptionService.Data
 
         }
 
+        //to configure the model that maps to the database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        {  
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<SubscriptionService.Models.User>().ToContainer("Users").HasPartitionKey(e => e.Id).HasNoDiscriminator();
             modelBuilder.Entity<Follow>().ToContainer("Follows").HasPartitionKey(e => e.FollowerId).HasNoDiscriminator();

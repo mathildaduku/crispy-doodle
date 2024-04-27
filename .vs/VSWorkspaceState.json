@@ -7,6 +7,6 @@
     "\\server\\SubscriptionService\\Services",
     "\\server\\SubscriptionService\\Services\\Implementations"
   ],
-  "SelectedNode": "\\server\\CrispyDoodle.sln",
+  "SelectedNode": "\\server\\SubscriptionService\\Services\\Implementations\\FollowService.cs",
   "PreviewInSolutionExplorer": false
 }

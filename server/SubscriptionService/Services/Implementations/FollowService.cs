@@ -57,7 +57,7 @@ namespace SubscriptionService.Services.Implementations
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while following the user.", ex);
+                throw new Exception("An error occurred while following the user.", ex); //db error
             }
            
         }
@@ -68,7 +68,7 @@ namespace SubscriptionService.Services.Implementations
             Guid followerGuid = Guid.Parse(followerId);
 
             //get total count of followees
-            int totalCount = await _context.Follows.Where(f => f.FollowerId == followerGuid).CountAsync();
+            int totalCount = await _context.Follows.Where(f => f.FollowerId == followerGuid).CountAsync(); //no need
 
             //calculate the number of items to skip based on the page number and page size
             int itemsToSkip = (pageNumber - 1) * pageSize;
@@ -89,7 +89,7 @@ namespace SubscriptionService.Services.Implementations
             //convert string ID to Guid
             Guid followeeGuid = Guid.Parse(followeeId);
 
-            //query the database to retrieve follow relationships for the followee with pagination.
+            //query the db to retrieve follow relationships for the followee with pagination.
             var followersQuery = _context.Follows.Where(f => f.FolloweeId == followeeGuid).Select(f => f.FollowerId.ToString());
 
             var totalCount = await followersQuery.CountAsync();
