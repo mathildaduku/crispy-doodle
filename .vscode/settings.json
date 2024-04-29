@@ -1,4 +1,5 @@
 {
+    "editor.defaultFormatter": "ms-dotnettools.csdevkit"
     "azureFunctions.deploySubpath": "server/NotificationService/bin/Release/net8.0/publish",
     "azureFunctions.projectLanguage": "C#",
     "azureFunctions.projectRuntime": "~4",
