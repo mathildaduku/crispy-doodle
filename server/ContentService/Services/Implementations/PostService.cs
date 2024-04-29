@@ -40,12 +40,25 @@ namespace ContentService.Services.Implementations
             //};
 
             query = query.OrderByDescending(x => x.CreatedAt);
-          
-
 
             var count = query.Count();
 
-            var result = await query.Skip((searchParams.PageNumber - 1) * searchParams.PageSize).Take(searchParams.PageSize).ProjectTo<GetPostsDto>(_mapper.ConfigurationProvider).ToListAsync();
+            var result = await query.Select(post => new GetPostsDto
+            {
+               
+                Id = post.Id,
+                Title = post.Title,
+                Description = post.Description,
+                CoverImageUrl = post.CoverImageUrl,
+                Author = post.UserId,
+                CreatedAt = post.CreatedAt,
+                ModifiedAt = post.ModifiedAt,
+                User = _mapper.Map<UserDto>(post.User),
+                LikeCount = post.LikeCount,
+                // Include a field indicating whether the user has liked the post
+                UserLiked = _context.Likes.Any(l => l.UserId == userId && l.PostId == post.Id)
+            }).Skip((searchParams.PageNumber - 1) * searchParams.PageSize).Take(searchParams.PageSize).ToListAsync();
+
             var payload = new PagedResponse<List<GetPostsDto>>
             {
                 results = result,
@@ -66,9 +79,61 @@ namespace ContentService.Services.Implementations
             _context.Entry(post).State = EntityState.Modified;
         }
 
-        public Task<Post> GetById(Guid postId)
+        public async Task<Post?> GetById(Guid postId)
         {
-            throw new NotImplementedException();
+            var post = await _context.Posts.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == postId);
+
+            return post;
+        }
+
+        public async Task<GetPostsDto?> GetById(Guid postId, Guid? userId)
+        {
+
+
+            var post = await _context.Posts.Select(post => new GetPostsDto
+            {
+
+                Id = post.Id,
+                Title = post.Title,
+                Description = post.Description,
+                CoverImageUrl = post.CoverImageUrl,
+                Author = post.UserId,
+                CreatedAt = post.CreatedAt,
+                ModifiedAt = post.ModifiedAt,
+                User = _mapper.Map<UserDto>(post.User),
+                LikeCount = post.LikeCount,
+                // Include a field indicating whether the user has liked the post
+                UserLiked = _context.Likes.Any(l => l.UserId == userId && l.PostId == post.Id)
+            }).FirstOrDefaultAsync(x => x.Id == postId);
+
+            return post;
+        }
+        public async Task<GetPostsDto?> GetByIdForAUser(Guid postId, Guid? userId)
+        {
+
+
+            var post = await _context.Posts.Select(post => new GetPostsDto
+            {
+
+                Id = post.Id,
+                Title = post.Title,
+                Description = post.Description,
+                CoverImageUrl = post.CoverImageUrl,
+                Author = post.UserId,
+                CreatedAt = post.CreatedAt,
+                ModifiedAt = post.ModifiedAt,
+                User = _mapper.Map<UserDto>(post.User),
+                LikeCount = post.LikeCount,
+                // Include a field indicating whether the user has liked the post
+                UserLiked = _context.Likes.Any(l => l.UserId == userId && l.PostId == post.Id)
+            }).FirstOrDefaultAsync(x => x.Id == postId);
+
+            return post;
+        }
+
+        public void Update(Post post)
+        {
+            _context.Posts.Update(post);
         }
     }
 }

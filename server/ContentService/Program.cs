@@ -1,5 +1,6 @@
 using AccountService.Data;
 using ContentService.Data;
+using ContentService.Extensions;
 using ContentService.Services.Implementations;
 using ContentService.Services.Interfaces;
 using MassTransit;
@@ -7,13 +8,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SearchService.Consumers;
+using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>{
-    options.UseCosmos(builder.Configuration.GetConnectionString("DefaultConnection"), databaseName: builder.Configuration["DatabaseName"]);
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     
     #if DEBUG
     options.EnableSensitiveDataLogging();
@@ -22,9 +24,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>{
 
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
+    //options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
     options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
 });
-;
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -34,7 +37,7 @@ builder.Services.AddMassTransit(x =>
     //x.AddEntityFrameworkOutbox<AppDbContext>(o =>
     //{
     //    o.QueryDelay = TimeSpan.FromSeconds(10);
-    //    o.use();
+    //    o.UseSqlServer();
     //    o.UseBusOutbox();
     //});
     x.AddConsumersFromNamespaceContaining<AccountCreatedConsumer>();
@@ -47,6 +50,13 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/CrispyDoodleLog.txt")
+    .CreateLogger();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -71,6 +81,10 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+
+builder.Host.UseSerilog();
 
 var app = builder.Build();
 
@@ -81,6 +95,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//app.ConfigureExceptionHandler(app.Logger);
+app.ConfigureCustomExceptionMiddleware();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -88,6 +104,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 try
 {

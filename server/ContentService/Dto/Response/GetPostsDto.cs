@@ -11,5 +11,6 @@
         public DateTime ModifiedAt { get; set; } = DateTime.UtcNow;
         public UserDto User { get; set; }
         public int LikeCount { get; set; }
+        public bool UserLiked { get; set;}
     }
 }

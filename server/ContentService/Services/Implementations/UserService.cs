@@ -12,7 +12,7 @@ namespace ContentService.Services.Implementations
         {
             this._context = context;
         }
-        public async Task<User?> GetUserById(string id)
+        public async Task<User?> GetUserById(Guid id)
         {
           return await  _context.Users.FindAsync(id);     
         }
