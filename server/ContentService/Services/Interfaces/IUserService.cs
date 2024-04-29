@@ -4,6 +4,6 @@ namespace ContentService.Services.Interfaces
 {
     public interface IUserService
     {
-        public Task<User?> GetUserById(string id);
+        public Task<User?> GetUserById(Guid id);
     }
 }

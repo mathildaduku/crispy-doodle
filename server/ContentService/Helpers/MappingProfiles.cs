@@ -13,9 +13,10 @@ namespace AccountService.Helpers
             CreateMap<AccountCreated, User>();
             CreateMap<AccountUpdated, User>();
             CreateMap<CreatePostDto, Post>();
-            CreateMap<Post, PostCreated>();
-            CreateMap<Post, GetPostsDto>();
-
+            CreateMap<Post, PostCreated>().ForMember(x => x.Author, s => s.MapFrom(d => d.UserId));
+            CreateMap<Post, GetPostsDto>().ForMember(s => s.Author, s => s.MapFrom(d => d.UserId));
+            CreateMap<User, UserDto>();
+            CreateMap<CreateCommentDto, Comment>();
         }
     }
 }
