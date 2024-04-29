@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts
+namespace NotificationService.Models
 {
-    public class SubscriptionDeleted
+    public class Subscription
     {
+        [Key]
         public Guid SubscriptionId { get; set; }
         public Guid SubscriberUserId { get; set; }
-        public Guid TargetUserId { get; set; }
-        public DateTime DeletionDate { get; set; } = DateTime.Now;
+        public Guid NotificationTargetUserId { get; set; }
     }
 }
