@@ -74,6 +74,44 @@
         "PUT",
         "DELETE"
       ]
+    },
+
+    //Follow API Config
+    {
+      "DownstreamPathTemplate": "/api/follow/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "UpstreamPathTemplate": "/api/follow/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ]
+    },
+
+    //Subscription API Config
+    {
+      "DownstreamPathTemplate": "/api/subscription/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "UpstreamPathTemplate": "/api/subscription/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ]
     }
   ],
   "GlobalConfiguration": {

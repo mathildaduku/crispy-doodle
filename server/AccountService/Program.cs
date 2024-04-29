@@ -89,7 +89,26 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000")
+
+                .AllowAnyHeader()
+
+                .WithMethods("GET", "POST", "PATCH", "PUT", "DELETE")
+
+                .SetIsOriginAllowed((host) => true)
+
+                .AllowCredentials();
+        });
+});
+
+
 var app = builder.Build();
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
