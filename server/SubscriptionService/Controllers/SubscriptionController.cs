@@ -6,7 +6,7 @@ using SubscriptionService.Data;
 using SubscriptionService.Dto.Request;
 using SubscriptionService.Helpers;
 using SubscriptionService.Services.Interfaces;
-
+using Microsoft.Extensions.Logging;
 
 namespace SubscriptionService.Controllers
 {
@@ -58,7 +58,7 @@ public async Task<IActionResult> SubscribeAsync(SubDto requestDto)
         _logger.LogError(ex, $"An unexpected error occurred while user with ID {userId} was subscribing to {requestDto.TargetUserId}");
         _response.Status = ResponseStatus.Error;
         _response.Message = "Something went wrong";
-        return new ObjectResult(_response) { StatusCode = 500 };
+                return new ObjectResult(_response) { StatusCode = 500 };
     }
 }
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SubscriptionService.Helpers;
 using SubscriptionService.Services.Interfaces;
-
+using Microsoft.Extensions.Logging;
 
 namespace SubscriptionService.Controllers
 {
