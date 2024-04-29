@@ -25,21 +25,19 @@ namespace SubscriptionService.Services.Implementations
             _followService = followService;
         }
 
-        public async Task<List<SubResponseDto>> GetSubscriptionsForUserAsync(string subscriberUserId)
+        public async Task<List<SubResponseDto>> GetSubscriptionsForUserAsync(Guid subscriberUserId)
         {
             var subscriptions = await _context.Subscriptions.Where(s => s.SubscriberUserId == subscriberUserId).ToListAsync();
-
             return _mapper.Map<List<SubResponseDto>>(subscriptions);
         }
 
-        public async Task<bool> IsSubscribedAsync(string subscriberUserId, string targetUserId)
+        public async Task<bool> IsSubscribedAsync(Guid subscriberUserId, Guid targetUserId)
         {
             var subscription = await _context.Subscriptions.Where(s => s.SubscriberUserId == subscriberUserId && s.TargetUserId == targetUserId).FirstOrDefaultAsync();
-
             return subscription != null;
         }
 
-        public async Task<SubResponseDto> SubscribeAsync(string subscriberUserId, SubDto requestDto)
+        public async Task<SubResponseDto> SubscribeAsync(Guid subscriberUserId, SubDto requestDto)
         {
             //check if the subscriber is following the target user
             var isFollowing = await _followService.IsFollowingAsync(subscriberUserId, requestDto.TargetUserId);

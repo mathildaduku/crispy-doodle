@@ -71,6 +71,7 @@ builder.Services.AddScoped<IUserIdentityService, UserIdentityService>();
 
 
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

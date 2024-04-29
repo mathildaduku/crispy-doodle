@@ -46,7 +46,7 @@ namespace SubscriptionService.Services.Implementations
             }
         }
 
-        public async Task<bool> IsSubscribedAsync(string subscriberUserId, string targetUserId)
+        public async Task<bool> IsSubscribedAsync(Guid subscriberUserId, Guid targetUserId)
         {
             var subscription = await _context.Subscriptions.Where(s => s.SubscriberUserId == subscriberUserId && s.TargetUserId == targetUserId).FirstOrDefaultAsync();
 

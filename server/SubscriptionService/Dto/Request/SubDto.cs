@@ -2,8 +2,8 @@
 {
     public class SubDto
     {
-        public string SubscriberUserId { get; set; }
-        public string TargetUserId { get; set; } // user whose posts are being subscribed to
+        public Guid SubscriberUserId { get; set; }
+        public Guid TargetUserId { get; set; } // user whose posts are being subscribed to
 
     }
 }
