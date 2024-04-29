@@ -5,12 +5,12 @@ namespace SubscriptionService.Services.Interfaces
 {
     public interface ISubService
     {
-        Task<SubResponseDto> SubscribeAsync(string subscriberUserId, SubDto requestDto);
+        Task<SubResponseDto> SubscribeAsync(Guid subscriberUserId, SubDto requestDto);
 
         Task<bool> UnsubscribeAsync(Guid subscriptionId);
 
-        Task<List<SubResponseDto>> GetSubscriptionsForUserAsync(string subscriberUserId);
+        Task<List<SubResponseDto>> GetSubscriptionsForUserAsync(Guid subscriberUserId);
 
-        Task<bool> IsSubscribedAsync(string subscriberUserId, string targetUserId);
+        Task<bool> IsSubscribedAsync(Guid subscriberUserId, Guid targetUserId);
     }
 }

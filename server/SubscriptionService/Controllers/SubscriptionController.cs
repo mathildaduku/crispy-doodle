@@ -17,44 +17,50 @@ namespace SubscriptionService.Controllers
         private readonly ISubService _subService;
         private readonly ApiResponse<object> _response = new ApiResponse<object>();
         private readonly IUserIdentityService _userIdentityService;
-        public SubscriptionController( ISubService subService, IUserIdentityService userIdentityService)
+        private readonly ILogger<SubscriptionController> _logger;
+        public SubscriptionController( ISubService subService, IUserIdentityService userIdentityService, ILogger<SubscriptionController> logger)
         {
             _subService = subService;
             _userIdentityService = userIdentityService;
+            _logger = logger;
         }
 
 
         [HttpPost("subscribe")]
-        [Authorize]
-        public async Task<IActionResult> SubscribeAsync(SubDto requestDto)
+[Authorize]
+public async Task<IActionResult> SubscribeAsync(SubDto requestDto)
+{
+    Guid userId = Guid.Empty;
+    try
+    {
+        userId = _userIdentityService.GetUserIdFromClaims(User);
+        if (userId == Guid.Empty)
         {
-            try
-            {
-                var userId = _userIdentityService.GetUserIdFromClaims(User);
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized();
-                }
-
-                var response = await _subService.SubscribeAsync(userId, requestDto);
-                _response.Status = ResponseStatus.Success;
-                _response.Message = "Subscribed successfully";
-                return Ok(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                //exception thrown when user is not following the target user
-                _response.Status = ResponseStatus.Error;
-                _response.Message = ex.Message;
-                return BadRequest(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.Status = ResponseStatus.Error;
-                _response.Message = "Something went wrong";
-                return new ObjectResult(_response) { StatusCode = 500 };
-            }
+            _response.Message = "User not authorized";
+            return Unauthorized();
         }
+
+        var response = await _subService.SubscribeAsync(userId, requestDto);
+        _response.Status = ResponseStatus.Success;
+        _response.Message = "Subscribed successfully";
+        return Ok(response);
+    }
+    catch (InvalidOperationException ex)
+    {
+        //exception thrown when user is not following the target user
+        _response.Status = ResponseStatus.Error;
+        _response.Message = ex.Message;
+        _logger.LogError(ex, $"An error occurred while user with ID {userId} was subscribing to {requestDto.TargetUserId} and is not following the target user.");
+        return BadRequest(_response);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"An unexpected error occurred while user with ID {userId} was subscribing to {requestDto.TargetUserId}");
+        _response.Status = ResponseStatus.Error;
+        _response.Message = "Something went wrong";
+        return new ObjectResult(_response) { StatusCode = 500 };
+    }
+}
 
         [HttpDelete("unsubscribe/{subscriptionId:guid}")]
         [Authorize]
@@ -65,6 +71,7 @@ namespace SubscriptionService.Controllers
                 var result = await _subService.UnsubscribeAsync(subscriptionId);
                 if (!result)
                 {
+                    _response.Message = "User not authorized";
                     return NotFound();
                 }
 
@@ -72,6 +79,7 @@ namespace SubscriptionService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"An error occured while unsubscribing {subscriptionId}");
                 _response.Status = ResponseStatus.Error;
                 _response.Message = "An error occurred while unsubscribing.";
                 return new ObjectResult(_response) { StatusCode = 500 };
@@ -85,8 +93,9 @@ namespace SubscriptionService.Controllers
             try
             {
                 var subscriberUserId = _userIdentityService.GetUserIdFromClaims(User);
-                if (string.IsNullOrEmpty(subscriberUserId))
+                if (subscriberUserId == Guid.Empty)
                 {
+                    _response.Message = "User not authorized";
                     return Unauthorized();
                 }
 
@@ -102,6 +111,7 @@ namespace SubscriptionService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occured while fetching subscriptions");
                 _response.Status = ResponseStatus.Error;
                 _response.Message = "An error occurred while fetching subscriptions.";
                 return new ObjectResult(_response) { StatusCode = 500 };
@@ -110,13 +120,14 @@ namespace SubscriptionService.Controllers
 
         [HttpGet("issubscribed/{targetUserId}")]
         [Authorize]
-        public async Task<IActionResult> IsSubscribed(string targetUserId)
+        public async Task<IActionResult> IsSubscribed(Guid targetUserId)
         {
             try
             {
                 var userId = _userIdentityService.GetUserIdFromClaims(User);
-                if (string.IsNullOrEmpty(userId))
+                if (userId == Guid.Empty)
                 {
+                    _response.Message = "User not authorized";
                     return Unauthorized();
                 }
 
@@ -127,6 +138,7 @@ namespace SubscriptionService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"An error occured while checking subscription status for the target user id {targetUserId}");
                 _response.Status = ResponseStatus.Error;
                 _response.Message = "An error occurred while checking subscription status.";
                 return new ObjectResult(_response) { StatusCode = 500 };

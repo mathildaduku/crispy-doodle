@@ -4,6 +4,6 @@ namespace SubscriptionService.Services.Interfaces
 {
     public interface IUserIdentityService
     {
-        string GetUserIdFromClaims(ClaimsPrincipal user);
+        Guid GetUserIdFromClaims(ClaimsPrincipal user);
     }
 }

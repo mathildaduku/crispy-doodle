@@ -4,10 +4,15 @@ using System.Security.Claims;
 namespace SubscriptionService.Services.Implementations
 {
     public class UserIdentityService : IUserIdentityService
+{
+    public Guid GetUserIdFromClaims(ClaimsPrincipal user)
     {
-        public string GetUserIdFromClaims(ClaimsPrincipal user)
+        var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        if (!Guid.TryParse(userId, out Guid guid))
         {
-            return user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            throw new InvalidOperationException("Invalid user ID.");
         }
+        return guid;
     }
+}
 }

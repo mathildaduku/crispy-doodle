@@ -19,16 +19,12 @@ namespace SubscriptionService.Services.Implementations
             _userService = userService;
         }
 
-        public async Task FollowUserAsync(string followerId, string followeeId)
+        public async Task FollowUserAsync(Guid followerId, Guid followeeId)
         {
             try
             {
-                //convert string ID's to Guid
-                Guid followerGuid = Guid.Parse(followerId);
-                Guid followeeGuid = Guid.Parse(followeeId);
-
                 //check if the follow relationship already exists
-                var existingFollow = await _context.Follows.FirstOrDefaultAsync(f => f.FollowerId == followerGuid && f.FolloweeId == followeeGuid);
+                var existingFollow = await _context.Follows.FirstOrDefaultAsync(f => f.FollowerId == followerId && f.FolloweeId == followeeId);
 
                 if (existingFollow != null)
                 {
@@ -39,18 +35,18 @@ namespace SubscriptionService.Services.Implementations
                 //create a new follow relationship
                 var newFollow = new Follow
                 {
-                    FollowerId = followerGuid,
-                    FolloweeId = followeeGuid
+                    FollowerId = followerId,
+                    FolloweeId = followeeId
                 };
 
                 //add the new follow relationship to the db
                 await _context.Follows.AddAsync(newFollow);
 
                 //update follower's followingCount
-                await _userService.UpdateFollowingCount(followerGuid, true);
+                await _userService.UpdateFollowingCount(followerId, true);
 
                 //update followee's followersCount
-                await _userService.UpdateFollowersCount(followeeGuid, true);
+                await _userService.UpdateFollowersCount(followeeId, true);
 
                 //save changes to the db
                 await _context.SaveChangesAsync();
@@ -62,20 +58,22 @@ namespace SubscriptionService.Services.Implementations
            
         }
 
-        public async Task<PagedResult<string>> GetFolloweesAsync(string followerId, int pageNumber, int pageSize)
+        public async Task<PagedResult<string>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize)
         {
-            //convert string ID to Guid
-            Guid followerGuid = Guid.Parse(followerId);
-
-            //get total count of followees
-            int totalCount = await _context.Follows.Where(f => f.FollowerId == followerGuid).CountAsync(); //no need
+            //get the user with the given followerId
+            var user = await _context.Users.FindAsync(followerId);
+            if(user == null){
+                throw new InvalidOperationException("User not found.");
+            }
+            //the FollowingCount property of the user
+            int totalCount = user.FollowingCount;
 
             //calculate the number of items to skip based on the page number and page size
             int itemsToSkip = (pageNumber - 1) * pageSize;
 
             //get the follow relationships for the follower with pagination
             var followees = await _context.Follows
-                .Where(f => f.FollowerId == followerGuid)
+                .Where(f => f.FollowerId == followerId)
                 .Select(f => f.FolloweeId.ToString())
                 .Skip(itemsToSkip)
                 .Take(pageSize)
@@ -84,41 +82,45 @@ namespace SubscriptionService.Services.Implementations
             return new PagedResult<string>(followees, totalCount, pageNumber, pageSize);
         }
 
-        public async Task<PagedResult<string>> GetFollowersAsync(string followeeId, int pageNumber, int pageSize)
+        public async Task<PagedResult<string>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize)
         {
-            //convert string ID to Guid
-            Guid followeeGuid = Guid.Parse(followeeId);
+            //get the user with the given followeeId
+                 var user = await _context.Users.FindAsync(followeeId);
+             if (user == null)
+               {
+                 throw new InvalidOperationException("User not found.");
+               }
+            //use the FollowersCount property of the user
+               int totalCount = user.FollowersCount;
 
-            //query the db to retrieve follow relationships for the followee with pagination.
-            var followersQuery = _context.Follows.Where(f => f.FolloweeId == followeeGuid).Select(f => f.FollowerId.ToString());
+            //calculate the number of items to skip based on the page number and page size
+            int itemsToSkip = (pageNumber - 1) * pageSize;
 
-            var totalCount = await followersQuery.CountAsync();
-            var followers = await followersQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            //get the follow relationships for the followee with pagination
+            var followers = await _context.Follows
+                .Where(f => f.FolloweeId == followeeId)
+                .Select(f => f.FollowerId.ToString())
+                .Skip(itemsToSkip)
+                .Take(pageSize)
+                .ToListAsync();
 
             return new PagedResult<string>(followers, totalCount, pageNumber, pageSize);
         }
 
-        public async Task<bool> IsFollowingAsync(string followerId, string followeeId)
+        public async Task<bool> IsFollowingAsync(Guid followerId, Guid followeeId)
         {
-            Guid followerGuid = Guid.Parse(followerId);
-            Guid followeeGuid = Guid.Parse(followeeId);
-
             //check if the follow relationship exists
-            var existingFollow = await _context.Follows.FirstOrDefaultAsync(f => f.FollowerId == followerGuid && f.FolloweeId == followeeGuid);
+            var existingFollow = await _context.Follows.FirstOrDefaultAsync(f => f.FollowerId == followerId && f.FolloweeId == followeeId);
             bool isFollowing = existingFollow != null;
 
             return isFollowing;
 
         }
 
-        public async Task UnfollowUserAsync(string followerId, string followeeId)
+        public async Task UnfollowUserAsync(Guid followerId, Guid followeeId)
         {
-            //convert string IDs to Guid
-            Guid followerGuid = Guid.Parse(followerId);
-            Guid followeeGuid = Guid.Parse(followeeId);
-
             //check if the user is following the other user
-            var follow = await _context.Follows.FirstOrDefaultAsync(f => f.FollowerId == followerGuid && f.FolloweeId == followeeGuid);
+            var follow = await _context.Follows.FirstOrDefaultAsync(f => f.FollowerId == followerId && f.FolloweeId == followeeId);
             if (follow == null)
             {
                 throw new InvalidOperationException("You are not following this user.");
@@ -139,16 +141,14 @@ namespace SubscriptionService.Services.Implementations
             _context.Follows.Remove(follow);
 
             //update follower's followingCount
-            await _userService.UpdateFollowingCount(followerGuid, false);
+            await _userService.UpdateFollowingCount(followerId, false);
 
             //update followee's followersCount
-            await _userService.UpdateFollowersCount(followeeGuid, false);
+            await _userService.UpdateFollowersCount(followeeId, false);
 
             //save changes to the database
             await _context.SaveChangesAsync();
         }
-
-
     }
 }
 

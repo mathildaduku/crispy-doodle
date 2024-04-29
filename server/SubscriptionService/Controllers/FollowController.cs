@@ -17,13 +17,15 @@ namespace SubscriptionService.Controllers
         private readonly IMapper _mapper;
         private readonly ApiResponse<object> _response = new ApiResponse<object>();
         private readonly IUserIdentityService _userIdentityService;
+        private readonly ILogger<FollowController> _logger;
 
-        public FollowController(IFollowService followService, IMapper mapper, IUserService userService, IUserIdentityService userIdentityService)
+        public FollowController(IFollowService followService, IMapper mapper, IUserService userService, IUserIdentityService userIdentityService, ILogger<FollowController> logger)
         {
             _followService = followService;
             _mapper = mapper;
             _userService = userService;
             _userIdentityService = userIdentityService;
+            _logger = logger;
         }
 
         [HttpPost("follow/{followeeId:guid}")]
@@ -33,10 +35,10 @@ namespace SubscriptionService.Controllers
             try
             {
                 var followerId = _userIdentityService.GetUserIdFromClaims(User);
-                if (string.IsNullOrEmpty(followerId))
+                if (followerId == Guid.Empty)
                 {
-                    _response.Message = "User not found."; //not auth error
-                    return NotFound(_response);
+                    _response.Message = "User not authorized";
+                    return Unauthorized();
                 }
 
                 // Check if the user to be followed exists.
@@ -47,10 +49,8 @@ namespace SubscriptionService.Controllers
                     return NotFound(_response);
                 }
 
-                var followeeIdString = followeeId.ToString();
-
                 // Check if the authenticated user is already following the target user.
-                var isFollowing = await _followService.IsFollowingAsync(followerId, followeeIdString);
+                var isFollowing = await _followService.IsFollowingAsync(followerId, followeeId);
                 if (isFollowing)
                 {
                     _response.Message = "You are already following this user.";
@@ -58,12 +58,13 @@ namespace SubscriptionService.Controllers
                 }
 
                 // Create a new follow relationship.
-                await _followService.FollowUserAsync(followerId, followeeIdString);
+                await _followService.FollowUserAsync(followerId, followeeId);
                _response.Message = "Successfully followed user.";
                 return Ok(_response);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"An error occurred while following the user with the: {followeeId}.");
                 _response.Message = ex.Message;
                 return BadRequest(_response);
             }
@@ -76,16 +77,14 @@ namespace SubscriptionService.Controllers
             try
             {
                 var followerId = _userIdentityService.GetUserIdFromClaims(User);
-                if (string.IsNullOrEmpty(followerId))
+                if (followerId == Guid.Empty)
                 {
-                    _response.Message = "User not found.";
-                    return NotFound(_response);
+                    _response.Message = "User not authorized";
+                    return Unauthorized();
                 }
 
-                var followeeIdString = followeeId.ToString();
-
                 // Check if the authenticated user is already following the target user.
-                var isFollowing = await _followService.IsFollowingAsync(followerId, followeeIdString);
+                var isFollowing = await _followService.IsFollowingAsync(followerId, followeeId);
                 if (!isFollowing)
                 {
                     _response.Message = "You are not following this user.";
@@ -93,13 +92,14 @@ namespace SubscriptionService.Controllers
                 }
 
                 // Remove the follow relationship.
-                await _followService.UnfollowUserAsync(followerId, followeeIdString);
+                await _followService.UnfollowUserAsync(followerId, followeeId);
 
                 _response.Message = "Successfully unfollowed user.";
                 return Ok(_response);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"An error occurred while unfollowing the user with the id: {followeeId}.");
                 _response.Message = ex.Message;
                 return BadRequest(_response);
             }
@@ -112,10 +112,10 @@ namespace SubscriptionService.Controllers
             try
             {
                 var userId = _userIdentityService.GetUserIdFromClaims(User);
-                if (string.IsNullOrEmpty(userId))
+                if (userId == Guid.Empty)
                 {
-                    _response.Message = "User not found.";
-                    return NotFound(_response);
+                    _response.Message = "User not authorized";
+                    return Unauthorized();
                 }
 
                 // Retrieve followers of the authenticated user.
@@ -125,6 +125,7 @@ namespace SubscriptionService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while retrieving followers.");
                 _response.Message = ex.Message;
                 return BadRequest(_response);
             }
@@ -137,10 +138,10 @@ namespace SubscriptionService.Controllers
             try
             {
                 var userId = _userIdentityService.GetUserIdFromClaims(User);
-                if (string.IsNullOrEmpty(userId))
+                if (userId == Guid.Empty)
                 {
-                    _response.Message = "User not found.";
-                    return NotFound(_response);
+                    _response.Message = "User not authorized";
+                    return Unauthorized();
                 }
 
                 // Retrieve followees of the authenticated user.
@@ -150,6 +151,7 @@ namespace SubscriptionService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while retrieving followees.");
                 _response.Message = ex.Message;
                 return BadRequest(_response);
             }
