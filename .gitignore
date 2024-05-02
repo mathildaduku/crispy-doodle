@@ -1,1 +1,4 @@
 values.xml
+/server/GatewayService/Properties/ServiceDependencies/crispygatewayservice - Web Deploy/profile.arm.json
+/server/AccountService/Properties/ServiceDependencies/crispyaccountservice - Web Deploy/profile.arm.json
+/server/ContentService/Properties/ServiceDependencies/crispycontentservice - Web Deploy/profile.arm.json
