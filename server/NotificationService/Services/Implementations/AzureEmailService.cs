@@ -19,14 +19,20 @@ namespace NotificationService.Services.Implementations
 
         public async Task SendHtmlEmailAsync(string toEmail, string subject, string templateFileName, object model)
         {
-            // Append ".html" to the template file name
-            var templateFileNameWithSuffix = templateFileName + ".html";
+            var mergedContent = await PrepareEmailContent(templateFileName, model);
+            await SendEmail(toEmail, subject, mergedContent);
+            _logger.LogDebug($"{templateFileName} email sent to {toEmail}");
 
+        }
+
+        private async Task<string> PrepareEmailContent(string templateFileName, object model)
+        {
+            // Append ".html" to the template file name
+            var templateFileNameWithSuffix = $"{templateFileName}.html";
             // Combine the folder path with the file name
             var templatePath = Path.Combine(_templatesFolderPath, templateFileNameWithSuffix);
 
             // Check if the template file exists
-
             if (!File.Exists(templatePath))
             {
                 throw new FileNotFoundException($"Template file not found: {templateFileNameWithSuffix}");
@@ -36,34 +42,6 @@ namespace NotificationService.Services.Implementations
             var templateContent = await File.ReadAllTextAsync(templatePath);
 
             // Merge the template with the model
-            var mergedContent = MergeTemplateWithModel(templateContent, model);
-
-            // Get the connection string
-
-            string connectionString = _configuration["COMMUNICATION_SERVICES_CONNECTION_STRING"];
-
-            // Create the email content
-            var emailContent = new EmailContent(subject) { Html = mergedContent };
-            // Create the email recipients list
-            var emailRecipients = new EmailRecipients(new List<EmailAddress>{ new EmailAddress(toEmail) });
-            // Create the email message
-            var message = new EmailMessage(senderAddress: "", emailRecipients, emailContent);
-            // Create the email client
-            var client = new EmailClient(connectionString);
-            try
-            {
-                // Send the email
-                await client.SendAsync(Azure.WaitUntil.Completed, message);
-            }catch (Exception ex)
-            {
-                _logger.LogError("Unable to send email", ex);
-            }
-            _logger.LogDebug($"{templateFileName} email sent to {toEmail}");
-        }
-
-        private string MergeTemplateWithModel(string templateContent, object model)
-        {
-            // Replace placeholders in the template with values from the model
             foreach (var property in model.GetType().GetProperties())
             {
                 var placeholder = $"{{{{{property.Name}}}}}";
@@ -73,5 +51,33 @@ namespace NotificationService.Services.Implementations
 
             return templateContent;
         }
+
+        private async Task SendEmail(string toEmail, string subject, string mergedContent)
+        {
+            // Get the connection string
+            string connectionString = _configuration["COMMUNICATION_SERVICES_CONNECTION_STRING"];
+
+            // Create the email content
+            var emailContent = new EmailContent(subject) { Html = mergedContent };
+            // Create the email recipients list
+            var emailRecipients = new EmailRecipients(new List<EmailAddress> { new EmailAddress(toEmail) });
+            // Create the email message
+            var message = new EmailMessage(senderAddress: "DoNotReply@73337412-f599-480d-81b3-8ff570132897.azurecomm.net", emailRecipients, emailContent);
+            // Create the email client
+            var client = new EmailClient(connectionString);
+            try
+            {
+                // Send the email
+                await client.SendAsync(Azure.WaitUntil.Completed, message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Unable to send email", ex);
+            }
+        }
+
     }
 }
+    
+
+        
