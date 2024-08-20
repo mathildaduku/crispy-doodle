@@ -1,3 +1,4 @@
+using Azure.Communication.Email;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationService;
 using NotificationService.Data;
+using NotificationService.Services.Implementations;
 using System.Reflection;
 
 var assemblyLocation = Assembly.GetExecutingAssembly().Location;
@@ -27,13 +29,14 @@ var host = new HostBuilder()
         services.AddSingleton<FunctionConfiguration>();
         services.AddDbContext<AppDbContext>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
-        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUserService, UserService>();      
+
         services.AddSingleton<IEmailService>(provider =>
         {
             var logger = provider.GetRequiredService<ILogger<EmailService>>();
             var environment = provider.GetRequiredService<IWebHostEnvironment>();
             var templatesFolderPath = Path.Combine(environment.ContentRootPath, "Emails");
-            return new EmailService(templatesFolderPath, logger, hostContext.Configuration);
+            return new AzureEmailService(templatesFolderPath, logger, hostContext.Configuration);
         });
     })
     .Build();
